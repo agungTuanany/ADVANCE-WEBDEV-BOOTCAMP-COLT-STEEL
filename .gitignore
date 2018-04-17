@@ -2,5 +2,5 @@
 node_modules
 
 #files not to commit:
-pakcage-lock.json
+package-lock.json
 
