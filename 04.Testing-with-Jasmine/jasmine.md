@@ -178,6 +178,7 @@ matchers :
 
 
 === example the bad testing ==== 
+
     /**
     defining var arr repeat it over and over.
 
@@ -369,7 +370,8 @@ matchers :
 		    });
 		});
 
-    == One or more expect ==
+  
+  == One or more expect ==
 
     /**
     if the testing is one unit needs more then one expect(), use more just make sure you not test several aspect of the unit that not belong togheter in singgle task case 
@@ -440,6 +442,7 @@ matchers :
 
 
 === Testing parameters ===
+	
 	/**
 	
 	
@@ -595,6 +598,7 @@ matchers :
 
 
 ==== Async Test ===
+	
 	/**
 	notice done() being passed and used in the callback function
 	
