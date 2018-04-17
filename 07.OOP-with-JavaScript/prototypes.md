@@ -77,7 +77,7 @@ this is the constructor function
 
 	function Person(name) {
 		this.name = name;
-} 
+	} 
 
 this is an object created from the person constructor
 
@@ -196,7 +196,7 @@ this is my answer, actually have a mistakes.
 		this.make = make;
 		this.model = model;
 		this.year = year;
-}
+	}
 
 	// make a isRunning function from each property Vehicle object.
 
