@@ -31,6 +31,6 @@ Subject Course :
 	25. REDUX
 
 
-It worh it to assign to the Udemy to learn fundamental JavaScript with Colt Stelee. 
+It worth it to assign to the Udemy to learn fundamental JavaScript with Colt Stelee. 
 
 Thank you so much with Colt Steele,Tim Garcia. Mat, Elie Schoopick. 

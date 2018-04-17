@@ -92,6 +92,6 @@ hasMostFollowers('daunge', 'tigarcia', 'colt').then(function(data) {
 
  }
 
- starwWarsString(1).then(function(data) {
+ starWarsString(1).then(function(data) {
      console.log(data)
  })
