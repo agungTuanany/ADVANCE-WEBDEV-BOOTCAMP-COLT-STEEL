@@ -137,7 +137,7 @@ eg.5 Nested Ascync Callbacks use promise
 eg.6 Refactor Nested Callbacks
 
 
-1.  creat a function Declaration (definition)
+//1.  creat a function Declaration (definition)
 
 	 var counter = 0;
 	 function inCounter() {
@@ -145,7 +145,7 @@ eg.6 Refactor Nested Callbacks
 	     console.log("Counter: ", counter);
 	 }
 
-2. Create a runlater Function
+//2. Create a runlater Function
 
 	function runLater(callback, timeInMs) {
 	    var p = new Promise(function(resolve, reject) {
@@ -157,7 +157,7 @@ eg.6 Refactor Nested Callbacks
 	    return p;
 	}
 
-3. Chain promises
+//3. Chain promises
 
 	runLater(incCounter, 1000).then(function() {
 		return runLater(incCounter, 2000);
