@@ -236,7 +236,7 @@
         */
 
 
-        1- call() method 
+        1. call() method 
 
             .- is what you want the value 'this' to be. 
 
@@ -374,7 +374,7 @@
 
             
 
-        2- apply() method
+        2. apply() method
 
             .- 'apply' only take two parameter at most.
 
@@ -443,7 +443,7 @@
 
 
         
-        3- bind() method
+        3. bind() method
 
             .- bind returning function definition the value keyword 'this' allready set to what you past as a first parameter to the bind() method 
 
@@ -563,6 +563,7 @@
     
    
  == Nested objects ==
+
     /**
     the value of the 'dog' key is actually another object. 
     inside the'dog' object we have a key of 'sayHello' 
