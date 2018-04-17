@@ -165,6 +165,7 @@
         which is mean is 'person'
         */
 
+
             //stric mode does NOT make a difference here
 
             var person = {
@@ -186,6 +187,7 @@
             }
 
             person.determineContext; // window
+
 
         /***
         the answer:
@@ -236,7 +238,8 @@
         */
 
 
-        1. call() method 
+
+        A. call() method 
 
             .- is what you want the value 'this' to be. 
 
@@ -245,37 +248,37 @@
     
             == example 'call' ==
 
-            var person = {
-                firtsName: "Colt", 
-                sayHi: function() {
-                    return "Hi" + this.FirstName;
-                },
-                determineContext: function() {
-                    return this === person;
-                },
-                dog: {
-                    sayHello: function() {
-                        return "Hello" + this.firstName;
-                    },
-                    determineContext: function() {
-                        return this === person;
-                    }
-                }
-            }
+		        var person = {
+		            firtsName: "Colt", 
+		            sayHi: function() {
+		                return "Hi" + this.FirstName;
+		            },
+		            determineContext: function() {
+		                return this === person;
+		            },
+		            dog: {
+		                sayHello: function() {
+		                    return "Hello" + this.firstName;
+		                },
+		                determineContext: function() {
+		                    return this === person;
+		                }
+		            }
+		        }
 
-            person.sayHi(); // "hi colt"
-            person.determineContext(); // true
+		        person.sayHi(); // "hi colt"
+		        person.determineContext(); // true
 
-            // this an error
+		        // this an error
 
-            person.dog.sayHello(); // "hello undifined"
-            person.dog.determineContex() // false. 
+		        person.dog.sayHello(); // "hello undifined"
+		        person.dog.determineContex() // false. 
 
 
-            // to fix this just add .call
+		        // to fix this just add .call
 
-            person.dog.sayHello.call(person) // 'Hello colt'
-            person.dog.determineContext.call(person) // true
+		        person.dog.sayHello.call(person) // 'Hello colt'
+		        person.dog.determineContext.call(person) // true
 
 
             /**
@@ -374,7 +377,7 @@
 
             
 
-        2. apply() method
+        B. apply() method
 
             .- 'apply' only take two parameter at most.
 
@@ -443,7 +446,7 @@
 
 
         
-        3. bind() method
+        C. bind() method
 
             .- bind returning function definition the value keyword 'this' allready set to what you past as a first parameter to the bind() method 
 
