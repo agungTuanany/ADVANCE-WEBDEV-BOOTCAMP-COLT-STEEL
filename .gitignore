@@ -1,0 +1,6 @@
+#Folder not to commit:
+node_modules
+
+#files not to commit:
+pakcage-lock.json
+
