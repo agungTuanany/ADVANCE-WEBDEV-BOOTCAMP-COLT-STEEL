@@ -58,7 +58,7 @@ style, attr, text, and html methods
     selection.text([newValue])
     selection.html([newValue])
 
-Note: These(and other!)D3 methods will works as getter if no newValue is passed
+Note: These (and other!) D3 methods will works as getter if no newValue is passed
 in
 
 real-world example:
@@ -75,3 +75,56 @@ classed method
                         ^               ^
                 space-separated list    ^
                                 check wheter classes should be added or removed
+
+## == SELECTION AND CALLBACKS ==
+
+this is useful when you got selection with multiple elements because the
+callback function will run once for each callback in the selection
+
+    selection.style(property [, callback])
+    selection.style(attribute, [, callback])
+    selection.text([callback])
+    selection.html([callback])
+
+ei:
+
+    d3.selectAll("li")
+        .style("font-size", function() {
+            return Math.random() \* 40 + "px";
+    })
+
+callback Structure
+
+    function (_ , idx) {
+              ^    ^
+              ^   Index of current element in the selection
+              ^
+    Dont wory about the first argument for now
+    }
+
+ei:
+
+    d3.selectAll("li")
+        .style(background-color, function(_, idx) {
+            return idx % 2 === 0 ? "lightgrey" : "white";
+        })
+
+### D3 indentation
+
+This common D3 convention for helping code readable.
+
+-   using 4 space indentation for method that return the current selection
+-   using 2 space indentation for method return a new selection
+
+          d3.select(".outer")
+              .style("color", "purple")
+            .select("div")
+              .style("font-size", "30px")
+              .style("background-color", "orange")
+            .select("div")
+              .style("border", "8px solid blue")
+
+there's nothing we've done here we couldn't done using vanilla JavaScript but
+when you start using D3 its good the get the habit using the method that D3
+provides and once we start using more functionality that set the D3 apart form
+other libraries being comfortable with these fundamentals willbe essential.
