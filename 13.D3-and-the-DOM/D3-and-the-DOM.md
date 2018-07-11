@@ -52,7 +52,7 @@ both accept a valid CSS selector.
 
 ## == MANIPULATING SELECTIONS ==
 
-style, attr, text, and html methods
+##### style, attr, text, and html methods
 
     selection.style(property [,newValue])
     selection.atrr(attribute [,newValue])
@@ -70,7 +70,7 @@ real-world example:
         .attr("class", "new-class")
         .text("D3 is cool!");
 
-classed method
+##### classed method
 
     selection.classed(classList [,shouldClassesBeSet])
                         ^               ^
@@ -94,7 +94,7 @@ e.g:
             return Math.random() \* 40 + "px";
     })
 
-callback Structure
+##### callback Structure
 
     function (_ , idx) {
               ^    ^

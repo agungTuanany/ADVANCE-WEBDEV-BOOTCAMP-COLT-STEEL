@@ -1,19 +1,17 @@
 <!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>D3 and the DOM</title>
+  </head>
+  <body>
+    <h1 id="page-title">This is my first D3 example!</h1>
 
-<html lang="en"> <head>
-  <meta charset="UTF-8">
+    <p class="first-paragraph">Here's my first paragraph.</p>
 
-  <title>D3 and the DOM</title>
-</head>
+    <p>Here are some reasons why d3 is cool:</p>
 
-<body>
-  <h1 id="page-title">This is my first D3 example!</h1>
-
-  <p class="first-paragraph">Here's my first paragraph.</p>
-
-  <p>Here are some reasons why d3 is cool:</p>
-
-  <ol>
+    <ol>
       <li>Makes data more engaging.</li>
       <li>Has built-in math helpers.</li>
       <li>Supports graph animations.</li>
@@ -21,16 +19,16 @@
     </ol>
 
     <div class="outer">
-        Here's an outer div.
+      Here's an outer div.
+
+      <div>
+        Here's an inner div.
 
         <div>
-            Here's an inner div.
-
-            <div>
-                Here's the last div.
-            </div>
+          Here's the last div.
         </div>
+      </div>
     </div>
-    <script src="https://d3js.org/d3.v4.js"></script>
-</body>
+    tscript src="https://d3js.org/d3.v4.js"></script>
+  </body>
 </html>
