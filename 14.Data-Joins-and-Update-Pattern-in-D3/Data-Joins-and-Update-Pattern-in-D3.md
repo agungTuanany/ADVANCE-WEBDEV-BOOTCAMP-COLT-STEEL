@@ -196,9 +196,91 @@ The second approach :
       .exit()
       .remove();
 
-![image-1](/Basic-data-Joins-and-Enter-Selection/images/pic-2.jpg)
+![image-2](/Basic-data-Joins-and-Enter-Selection/images/pic-2.jpg)
 
 In this case *Key Function* tells D3 that the first elements in the quotes array
 should be match whatever list item corresponds that quotes and so on for the
 second and the third quotes. When data is bound this way the two list items
 without any data will be precisely the list item containing outrated quotes.
+
+
+## General Update Pattern
+
+When you appending a new element on an update, make sure you select the parent
+element you like to append to before selecting the children, otherwise by
+default your new element will be appended to the HTML tag.
+
+    d3.selectAll("li")  << this the issue
+      .data(quotes)
+      .enter()
+      .append("li")
+        .text()
+
+In this case we need update our initial selection so that were first selecting
+the unordered list before creating the selection of list item.
+
+    d3.select("quotes")   << add parent element
+      .selectAll("li")
+      .enter()
+      .append("li")
+        .text();
+
+Note: any changes you make to selection will only affect the new list item, this
+because we pass in to the enter selection.
+
+##### Selection Types
+
+![Selection Types](/General-Update-Pattern/images/D3-selection.jpg)
+
+    * Enter selection: correspond pieces of data that don't yet have element on the page
+
+    * Exit selection: correspond the element on the page that no longer have pieces of data
+
+    * Update selection: correspond the element on the page that successfully join the data
+
+This separation between **Enter** and **Update** selection can be helpful if we
+want to style one group differently then the other. But what if we want to apply
+the same of changes above selection? We could just grab each group individually
+and apply the changes we want. D3 provides a method called **Merge()**
+
+##### Merging Selection
+
+    selection.merge(otherSelection)
+
+Merges _**selection**_ and _**otherSelection**_ together into a new selection
+
+e.g:
+
+Let's apply our existing style rules to the _**newQuotes**_ but after merging lets
+changes the font-color every quotes on the pages.
+
+First we binding existing **listItem** to our new data and storing the
+selection. Since we haven't call enter() or exit() this represent the **Update**
+selection.
+
+    var listItems = d3.select("#quotes")
+      .selectAll("li")
+      .data(quotes);
+
+Next happing (take place) to **Enter** selection appending the new listItems and styling them
+appropriately
+
+    ListItems
+      .enter()
+      .append("li")
+        .text()
+        .style("background-color", d => colors[d.rating])
+        .style("border-radius", "8px")
+      .merge(listItems)    << this is why we store the Update selection into a variable
+        .style("color", "#5599ff");
+
+We updating the style at every listItems in that selection not just the new one.
+
+##### 4 steps General Update Pattern
+
+1. Grab the update selection, make any changes unique to that selection, and
+   store the selection in a variable.
+2. Grab the exit selection and remove any unnecessary elements.
+3. Grab the enter selection and make any changes unique to that selection
+4. Merge the enter and update selections, and make any changes that you want to
+   be shared across both selections.
