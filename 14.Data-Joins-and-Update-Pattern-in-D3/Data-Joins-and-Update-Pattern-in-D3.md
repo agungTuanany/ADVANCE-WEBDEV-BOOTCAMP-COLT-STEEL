@@ -284,3 +284,288 @@ We updating the style at every listItems in that selection not just the new one.
 3. Grab the enter selection and make any changes unique to that selection
 4. Merge the enter and update selections, and make any changes that you want to
    be shared across both selections.
+
+## Exercise & Solution Character Frequencies
+
+I Make a function _**getFrequencies**_ that calculate frequencies that given input
+a string. This function return array of object where each objects store the
+character and it's counts as values.
+
+    function getFrequencies(str){
+
+    }
+
+The reason that why I want this structure is, that will be convenient to pass
+this array into D3's data method to joint the array to elements.
+
+Implementing this function doesn't require any D3 knowledge it's pure
+JavaScript. How you implement this function depends how you want order the
+characters. I like them to appear alphabetically in my visualisation. So I'm
+going to split this string and sort the resulting array.
+
+    var sorted = str.split("").sort();
+
+Next I create an empty array to store my eventual output.
+
+    var data = [];
+
+And write for-loop over my sorted array to build-up my data array. You can also
+build this with "reduce", but lets keep this thing simple for now.
+
+    for (var i = 0; i < sorted.length; i++) {
+
+    }
+
+Since my array is sorted I know that any repeating character will appear
+consecutive position. This is helpful for figuring out the counts for each
+character. First I grab the last element in the array.
+
+    var last = data[data.length - 1];
+
+If there is last element and if that element character property matches the
+current character than I know I found the character I seen before then I can
+increment the count.
+
+    if (last && last.character === sorted[i]) last.count++;
+
+If I just starting out or I have seen the new character, then I can push a new
+object into my new array which character property is current character and is
+count is one.
+
+    else data.push ({ character: sorted[i], count: 1 })
+
+I'll never push  two object with the same property into the array because I'm looping over a sorted
+array, so any duplicate will be caught by "if-condition".
+
+Full function will be:
+
+    function getFrequencies(str) {
+        var sorted = str.split("").sort();
+        var data = [];
+      for (var i = 0; i < sorted.length; i++) {
+            var last = data[data.length - 1];
+            if (last && last.character === sorted[i]) last.count++;
+            else data.push({ character: sorted[i], count: 1  });
+      }
+        return data;
+    }
+
+    getFrequencies("Hello!, World");
+
+    >> 10) […]
+          0: Object { character: " ", count: 1  }
+          1: Object { character: "!", count: 1  }
+          2: Object { character: ",", count: 1  }
+          3: Object { character: "H", count: 1  }
+          4: Object { character: "W", count: 1  }
+          5: Object { character: "d", count: 1  }
+          6: Object { character: "e", count: 1  }
+          7: Object { character: "l", count: 3  }
+          8: Object { character: "o", count: 2  }
+          9: Object { character: "r", count: 1  }
+          length: 10
+          <prototype>: Array []
+
+Let's start with D3.
+
+I'll start with the "form" submission. I'll made to use D3 to listen the submit
+event on the form. Inside the callback I first call a "**preventDefault()**" on the
+event object which I access via **d3.event()**. Next I start the input as
+**d3.selection()** and I grab this value use D3 "**proprety()**" method.
+
+    d3.select("form")
+        .on("submit", function() {
+          d3.event.preventDefault();
+          var input = d3.select("input");
+          var text = input.property("value");
+          ......
+          ......
+        });
+
+At this point there are view things I need todo. First I make to create a enter
+selection point and depends some 'div' to the page so that I can see the
+frequencies for each character. I'll also need to update the text inside the
+freeze 'div'. I leave the count 'div' alone for now.
+
+To drop visualization with D3, let me select "#letters" container then select
+all element inside all of it with the class of "letter". This will give me empty
+selection that I can then join data() to. Inside **data()** method I'll use
+getFrequencies() and pass the text from the form.
+
+
+    d3.select("letters")
+      .selectAll(".letter")
+      .data(getFrequencies(text))
+
+Then I'll hub the **enter** selection, **append** the 'div' for each piece of
+data and add the class of "letter", I also add some my own style. Each time
+I given characters appears on the screen I add "20px" of high. I also add the
+inner text so that we can see the characters.
+
+      .enter()
+      .append("div")
+        .classed("letter", true)
+        .style("width", "20px")
+        .style("line-height", "20px")
+        .style("margin-right", "5px")
+        .style("height", function(d) {
+          return d.count * 20 + "20px";
+        })
+        .text(function(d) {
+          return d.character;
+        })
+
+Finally for the 'div' with an id of "**#phrase**" I'll set the inner text of it base
+on the text from the form
+
+    d3.select("#phrase")
+        .text("Analysis of: " + text);
+
+
+Full of code will be :
+
+    d3.select("form")
+        .on("submit", function() {
+          d3.event.preventDefault();
+          var input = d3.select("input");
+          var text = input.property("value");
+
+          d3.select("letters")
+            .selectAll(".letter")
+            .data(getFrequencies(text))
+            .enter()
+            .append("div")
+              .classed("letter", true)
+              .style("width", "20px")
+              .style("line-height", "20px")
+              .style("margin-right", "5px")
+              .style("height", function(d) {
+                return d.count * 20 + "20px";
+              })
+              .text(function(d) {
+                return d.character;
+              })
+
+          d3.select("phrase")
+              .text("Analysis of: " + text);
+        });
+
+Our form works the first time we submit it, but not on subsequent tries, to get
+form working on multiple submission we need to use the general update pattern.
+To get those working I store update selection in variable.
+
+    var letters = d3.select("#letters")
+                    .selectAll("letter")
+                    .data(getFrequencies(text));
+
+For the update selection I want to make sure no element has class of new since
+element in update selection already exists on the page. So I'll use the class
+method to remove the new class and then I pop in selection and remove any
+'div' that don't need to be there.
+
+    letters
+        .classed("new", false)
+        .exit()
+        .remove();
+
+Next I move to the enter selection. In addition to adding a class of letters
+I also want to add a class of new to the new elements so the inner text is style
+a bit differently. The res of the style changes I can move to the **merge**
+enter and **update** selection since they should apply above.
+
+    letters
+      .enter()
+      .append("div")
+        .classed("letter", true)
+        .classed("new", true)
+      .merge(letters)
+        .style("width", "20px")
+        .style("line-height", "20px")
+        .style("margin-right", "5px")
+        .style("height", function(d) {
+          return d.count * 20 + "20px";
+        })
+        .text(function(d) {
+          return d.character;
+        })
+
+Let me use this opportunity to update "**#count**" 'div', when the form
+submitted the number of new letters will be equal the number of nodes on the
+enter selection.
+
+    d3.select("#count")
+      .text("(New characters: " + letters.enter().nodes().length + ")");
+
+So the rest code will be :
+
+    d3.select("form")
+        .on("submit", function() {
+          d3.event.preventDefault();
+          var input = d3.select("input");
+          var text = input.property("value");
+
+          var letters = d3.select("letters")
+                          .selectAll(".letter")
+                          .data(getFrequencies(text));
+
+          letters
+              .classed("new", false)
+              .exit()
+              .remove();
+
+          letters
+            .enter()
+            .append("div")
+              .classed("letter", true)
+              .classed("new", true)
+            .merge(letters)
+              .style("width", "20px")
+              .style("line-height", "20px")
+              .style("margin-right", "5px")
+              .style("height", function(d) {
+                return d.count * 20 + "20px";
+              })
+              .text(function(d) {
+                return d.character;
+              })
+
+          d3.select("phrase")
+              .text("Analysis of: " + text);
+
+          d3.select("#count")
+            .text("(New characters: " + letters.enter().nodes().length + ")");
+
+          input.property("value", "");
+        });
+
+
+So we have encounter a problem that the second phrase isn't count the new
+letters. The problem is **how we join a data**. We didn't pass a key function so by
+default D3 join by index. If the second phrase have one or more unique
+characters then the first, how to make D3 understand that the second letters
+include a new characters? We can fix this by joining **base on characters**
+rather then in **index**.
+
+    var letters = d3.select("#letters")
+        .selectAll("letter")
+        .data(getFrequencies(text), function(d) { << this solve the problem
+          return d.character;
+      });
+
+Let finish this things up by tackling a reset button. Compare to the form
+submission this is much more straight forward. I target the button and listen
+for the 'click' inside of the callback I just need to select a class of
+  **letter** remove that selection and clear out the text inside the **#phrase**
+  and **#count** 'div'.
+
+    d3.select("#reset")
+      .on("click", function() {
+          d3.selectAll(".letter")
+            .remove();
+
+          d3.select("#phrase")
+            .text("");
+
+          d3.select("#count")
+            .text("");
+      })
