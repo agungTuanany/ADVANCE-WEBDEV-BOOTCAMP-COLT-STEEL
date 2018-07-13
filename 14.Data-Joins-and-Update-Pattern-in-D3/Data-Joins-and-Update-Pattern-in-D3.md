@@ -137,7 +137,7 @@ can see the data is correct, there are no "R" quote here.
 So what went wrong? The issue here has to do how data to get bounds element in
 D3. By default data is join on the element is by index.
 
-![image-1](/Basic-data-Joins-and-Enter-Selection/images/pic-1.jpg)
+![image-1](./Basic-data-Joins-and-Enter-Selection/images/pic-1.jpg)
 
 * the first elements in the non "R" quotes array is match of first list item
 * the second elements in the non "R" quotes array is match to the second list item and so on.
@@ -196,7 +196,7 @@ The second approach :
       .exit()
       .remove();
 
-![image-2](/Basic-data-Joins-and-Enter-Selection/images/pic-2.jpg)
+![image-2](./Basic-data-Joins-and-Enter-Selection/images/pic-2.jpg)
 
 In this case *Key Function* tells D3 that the first elements in the quotes array
 should be match whatever list item corresponds that quotes and so on for the
@@ -230,7 +230,7 @@ because we pass in to the enter selection.
 
 ##### Selection Types
 
-![Selection Types](/General-Update-Pattern/images/D3-selection.jpg)
+![Selection Types](./General-Update-Pattern/images/D3-selection.jpg)
 
     * Enter selection: correspond pieces of data that don't yet have element on the page
 
