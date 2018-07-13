@@ -32,14 +32,14 @@ without any degradation quality. SVG is markup language base on **XML**. That
 allow us to draw vector graphic in HTML. The Mozilla Developer Network (MDN)
 summarize well. **SVG is essentially to graphic what HTML is to text**
 
-##### The SVG Element
+### The SVG Element
 
     <svg version ="1.1"
          baseProfile="full"
          xmlns="http://www.w3.org/2000/svg">
     </svg>
 
-##### Line Elements
+### Line Elements
 line determine by full points.
 
     * x1 -x-coordinate of first endpoint
@@ -74,7 +74,7 @@ Typically when you graph things in math class positive number increase from left
 to right aling the *x-axis* and bottom to top along the *y-axis*. But with SVG
 the *y-axis* is reverse value increase is you **go down** not is you **go up**.
 Put in another way in math class the point coordinate **0,0** typically in lower
-left corner system. But in SVG this point is in the upper left corner. As you
+left corner system. But in SVG this point is in the **upper left** corner. As you
 move to the right the first coordinates increases and as you move down the
 second coordinates increases.
 
@@ -99,7 +99,7 @@ take this approach you can wrap both line in **g-element**.
 
 ![SVG-3.jpg](./images/SVG-3.jpg)
 
-##### g Elements
+### g Elements
 
 **g** stand for "group"
 
@@ -117,7 +117,7 @@ In this example we can move stroke-width and stroke setting in **g-tag**.
         </g>
     </svg>
 
-##### Rectangle Elements
+### Rectangle Elements
 
 
 Rather then drawing four line to create rectangle we can also draw rectangle by
@@ -176,7 +176,7 @@ or electrical shape. Every rectangle were sharp corner it is example of the
 polygon. An SVG polygon as initiate by straight line edges. You can draw an
 arbitrary polygon by using polygon element.
 
-##### Polygon Element
+### Polygon Element
 
 Polygon Attributes:
 
@@ -196,7 +196,7 @@ Here we rewrite existing code use **polygon** elements instead of **rectangle**.
     </svg>
 
 We got one attributes instead of four, but we have to do some arithmetic to
-compute the coordinate the four corners of rectangle. All polygon are rectangle
+compute coordinate the four corners of rectangle. All polygon are rectangle
 and not all rectangle are polygon.
 
 Here an example that rectangle isn't polygon:
@@ -215,7 +215,7 @@ Here an example that rectangle isn't polygon:
 
 ![Polygon-1.jpg](./images/Polygon-1.jpg)
 
-##### Circle Elements
+### Circle Elements
 
 Circle Attributes:
 
@@ -226,7 +226,7 @@ Circle Attributes:
 Lets draw some circle:
 
     <svg version ="1.1"
-         baseProfile="full"
+         baseprofile="full"
          xmlns="http://www.w3.org/2000/svg">
       <polygon
         fill="yellow"
@@ -242,3 +242,102 @@ Lets draw some circle:
     </svg>
 
 ![Circle-1.jpg](./images/Circle-1.jpg)
+
+### Text Elements in SVG
+
+When you use **text** element at minimum you should specify where you want to be
+using the **x** and **y** attributes.
+
+##### Text attributes
+
+    * x - x-coordinate of lower-left corner
+    * y - y-coordinate of lower-left corner
+
+The **x** and **y** coordinate pass in refer to the position of the bottom left
+corner of the text, as you can see this can make for text element that off
+center.
+
+    <svg version ="1.1"
+         baseprofile="full"
+         xmlns="http://www.w3.org/2000/svg">
+         <polygon .../>
+         <text x="400" y="430">Starry staryy SVG</text>
+     </svg>
+
+![Text-1.jpg](./images/Text-1.jpg)
+
+If you want center the text there are a are a couple ways to do it. One is to
+use **dx** or **dy** attributes to shift the text element from anchor point
+horizontally or vertically. However this require you before hand the amount you
+need to shift by.
+
+##### More text attributes
+
+    * dx - x-coordinate of lower-left corner
+    * dy - y-coordinate of lower-left corner
+
+![Text-2.jpg](./images/Text-2.jpg)
+
+     <text x="400" y="430" dx="60">Starry staryy SVG</text>
+
+The simpler approach to use the text anchor property which you can set either as
+an attributes the element or using CSS 
+
+Text anchor have 3 possible values.
+
+##### Text element CSS Properties | text-anchor
+
+    * start
+    * middle
+    * end
+
+![Text-3.jpg](./images/Text-3.jpg)
+
+If you set it to **midldle** well refer to position the bottom-middle of the element.
+If you set it to **end** the coordinate will refer to the position of the bottom
+right corner.
+
+     <text x="400" y="430" text-anchor="middle">Starry staryy SVG</text>
+
+##### Text element CSS Properties | Alignment-baseline
+
+    * hanging
+    * middle
+    * baseline
+
+![Text-4.jpg](./images/Text-4.jpg)
+
+    <text x="400" y="430" alignment-baseline="middle">Starry staryy SVG</text>
+
+We can also set other CSS properties like **font-size** and **font-family**. We
+can even can set **color**. However unlike font outside of SVG we need to set
+**color** with **fill** and **stroke** just like other SVG elements.
+
+    <text x="400" y="430" text-anchor="middle" font-size="1.5em"
+    font-family="sans-serif" fill="white" stroke-width="1px" stroke="black">
+    Strayy starry SVG</text>
+
+We can also **rotate** text this is particularly helpful if you try to label
+axis and need text to be vertically align.
+
+##### Text element CSS Properties | transform
+
+    * rotate(degree x,y)
+
+![Text-5.jpg](./images/Text-5.jpg)
+
+In order to rotate you should specify degree of rotation and the coordinate
+point that you want to rotate around.
+
+e.g:
+
+    <text x="400" y="430" text-anchor="middle" font-size="1.5em"
+      font-family="sans-serif" fill="white" stroke-width="1px" stroke="black"
+      transform=(-10 400, 430)
+    >
+    Strayy starry SVG</text>
+
+![Text-6.jpg](./images/Text-6.jpg)
+
+**The same technique can be use to rotate other shape we've look at like
+_circle_ and _polygon_**.
