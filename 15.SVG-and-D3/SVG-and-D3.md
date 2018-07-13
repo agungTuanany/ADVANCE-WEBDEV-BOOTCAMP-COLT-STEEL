@@ -68,7 +68,7 @@ high school math class it would have positive slope but the line on SVG slope
 downward. To understand why slope goes down we need to understand how
 **Coordinates** work on SVG.
 
-##### Coordinates in SVG
+### Coordinates in SVG
 
 Typically when you graph things in math class positive number increase from left
 to right aling the *x-axis* and bottom to top along the *y-axis*. But with SVG
@@ -165,7 +165,7 @@ the orange rectangle as a second rectangle.
 One last thing we can also round the corner of rectangle using **rx** adn **ry**
 attributes.
 
-##### More rect Attributes
+##### More rectangle Attributes
 
     * rx - round corner in x direction
     * ry - round corner in y direction
@@ -333,7 +333,7 @@ e.g:
 
     <text x="400" y="430" text-anchor="middle" font-size="1.5em"
       font-family="sans-serif" fill="white" stroke-width="1px" stroke="black"
-      transform=(-10 400, 430)
+      transform=rotate(-10 400, 430)
     >
     Strayy starry SVG</text>
 
@@ -341,3 +341,262 @@ e.g:
 
 **The same technique can be use to rotate other shape we've look at like
 _circle_ and _polygon_**.
+
+### Path Element in SVG
+
+ This is the most complex element we will discuss. And can be tough is brought
+ generalization of  **line, circle, rect, polygon** in fact you can draw all of
+ shape we all ready drawn with just **path** element.
+
+![Path-1.jpg](./images/Path-1.jpg)
+
+With great power often comes a new syntax and syntax of creating **path** is
+difficult to read. In general if you working with SVG frequently you more likely
+to using program to sketch the SVG and then export it. So relevant **path**
+command automatically generated. However it's good to know what this command
+doing.
+
+![Path-2.jpg](./images/Path-2.jpg)
+
+##### Path Elements | "d" Attributes commands
+
+The most important path attributes is "d" attributes command. This is we
+describe the **path** will be drawing. You can thinking drawing a **path**
+similar to draw **path** with a pencil with a piece of paper. Our job now is to
+describe to computer how we wanna move the pencil.
+
+There are six  fundamental command to draw a **path**
+
+    * M- (move)
+    * L - (line)
+    * S - (close path)
+    * Q - (quadratic Bezier curve)
+    * C - (cubic Bezier curve)
+    * A - (circular arc)
+
+##### Path Element | Move command
+
+    * Syntax: M X Y
+    * Moves the cursor to position X, Y
+    * Does not Draw anything
+
+This is like you lifting your pencil off the paper and putting it down in a new
+location. The M command not draw anything it's simple move the cursor.
+
+If we want move the cursor with "x"coordinate: **400** and "y"-coordinate: **100**
+this is what we write.
+
+    <svg version ="1.1"
+         baseprofile="full"
+         xmlns="http://www.w3.org/2000/svg">
+     <path
+        d="M400 100"
+     />
+     </svg>
+
+This move cursor **400** pixels over and **100** pixels down.
+
+##### Path Elements | Line command
+
+    * Syntax: L X Y
+    * Draws a line from the cursor's current position
+    * The Line will end at position X,Y
+    * Can be chained together to draw multiple line segments.
+
+By chaining **L** command together we essentially get same functionality that we
+have at **polygon** command from before.
+
+Here example we can draw **triangle** for instance:
+
+    <svg version ="1.1"
+         baseprofile="full"
+         xmlns="http://www.w3.org/2000/svg">
+     <path
+        d="M400 100
+           L500 300   >> drawing line down into the right
+           L300 300   >> drawing line down into the left
+           L400 100"  >> drawing line up into the right
+        stroke="red"
+        stroke-width="3px"
+     </svg>
+
+![Path-3.jpg](./images/Path-3.jpg)
+
+Notice that both this command use Uppercase letters the are lowercase
+equivalent but come with important different.
+
+##### Uppercase vs Lowercase
+
+    * UPPERCASE X Y - X and Y represent the "location" you want to go to.
+    * lowercase X Y - X and Y represent "how far" you want to go from your current
+      position.
+
+![Path-4.jpg](./images/Path-4.jpg)
+
+The cursor start to 0,0 so there's no different with **M** and **m** for the
+first command. Moving to the point coordinate 500,300 is equivalent to moving
+100 pixels over and 200 pixels down you can compare the last two command in the
+similar way.
+
+##### Path Elements | line command shortcut
+
+    * Z / z - close the path with a line
+    * H / h - draw a horizontal line
+    * V / v - draw a vertical line
+
+So we can simplify our previous **path** example.
+
+
+    <svg version ="1.1"
+         baseprofile="full"
+         xmlns="http://www.w3.org/2000/svg">
+     <path
+        d="M400 100
+           l100 200
+           h-200
+           z"
+        stroke="red"
+        stroke-width="3px"
+     </svg>
+
+![Path-5.jpg](./images/Path-5.jpg)
+
+#### Path Elements | curve command
+
+    * Q - quadratic curve
+    * C - cubic bezier curve
+    * A - circular arc
+
+##### Path Elements | quadratic curve
+
+    * Q - cx cy, x y
+
+![Path-6.jpg](./images/Path-6.jpg)
+
+    <svg version ="1.1"
+         baseprofile="full"
+         xmlns="http://www.w3.org/2000/svg">
+      <g fill="none" stroke-width="10px">
+        <path d="M0 225 Q 400 0 225" stroke="red" />
+        <path d="M100 100 Q700 200 700 350" stroke="blue" />
+      </g>
+     </svg>
+
+=====================================================
+
+        <path d="M0 225 Q 400 0 225" stroke="red" />
+                        ^     ^
+                        ^  (x y)Destination
+            (cx cy)Control point
+or
+
+        <path d="M100 100 Q700 200 700 350" stroke="blue" />
+                          ^         ^
+                          ^  (x y) Destination
+            (Q cx cy) Control point
+
+If you want more find tune control over the curve save then you can pass
+**three** parameter of coordinate into **C**-command.
+
+##### Path Elements | cubic bezier curve
+The **C** command takes in **two control point** instead of **one**. Allowing
+you to draw a large family of curves.
+
+    C cx1 cy1, cx2 cy2, x y
+
+![Path-7.jpg](./images/Path-7.jpg)
+
+e.g:
+
+    <svg version ="1.1"
+         baseprofile="full"
+         xmlns="http://www.w3.org/2000/svg">
+      <g fill="none" stroke-width="10px">
+        <path d="M0 225 C 200 450 400 0 800 225" stroke="red" />
+        <path d="M0 100 C 600 450 400 0 800 225" stroke="orange" />
+        <path d="M100 100 C0 0 700 200 700 350" stroke="blue" />
+      </g>
+     </svg>
+
+![Path-9.jpg](./images/Path-9.jpg)
+
+        <path d="M0 225 C 200 450 400 0 800 225" stroke="red" />
+                          ^       ^     ^
+                          ^       ^   (x,y)Destinantion
+                          ^ (C cx2, cy2) Control point
+                    (C cx1, cy2) Control point
+
+
+##### Path elements | circular arc
+
+This one is little bit tricky because the value you should to pass in. There are
+seven value you need to out command some easier to describe then the other.
+
+    * A rx ry - when this value are equal you draw the arc of "circle" otherwise
+                you draw the arc of "ellips".
+    * x y - specify your destination.
+    * Let ignore the middle three parameter for now.
+
+![Path-8.jpg](./images/Path-8.jpg)
+
+Imagine you have SVG with these three element inside of it. A path with
+**arc**-command one circle with the start of the **arc** and another at the end.
+As you can see this give small green circular **arc** with two black circle an
+either end.
+
+    <svg version ="1.1"
+         baseprofile="full"
+         xmlns="http://www.w3.org/2000/svg">
+        <path d="M300 250 A100 100 0 0 0 480 300" fill="green" />
+        <circle cx="300" cy="250" r="5" />
+        <circle cx="400" cy="300" r="5" />
+     </svg>
+
+Lets look up at an example imagine you have an SVG with these three element
+inside of it a path with an **arc** command one circle at the start the **arc**
+and another at the end. As you can see this give us small green circular **arc**
+with two black circle an either end.
+
+![Path-10.jpg](./images/Path-10.jpg)
+
+However this choice of **arc** is some of arbitrary, there actually four possible
+**arc** that can be made with this two points because there two circle you can
+draw base on that points and for each circle you can choose weather to draw the
+larger **arc** or the smaller **arc**.
+
+The **arc** thicket drawn is determine by the fourth and fifth argument, which
+both take on value of "**0**" or "**1**".
+
+Here all four possible combination these arguments.
+
+    <svg version ="1.1"
+      baseProfile="full"
+      xmlns="http://www.w3.org/2000/svg">
+        <path d="M300 250 A100 100 0 1 0 480 300" fill="red" />
+        <path d="M300 250 A100 100 0 1 1 480 300" fill="purple" />
+        <path d="M300 250 A100 100 0 0 0 480 300" fill="green"  />
+        <path d="M300 250 A100 100 0 0 1 480 300" fill="blue"/>
+        <circle cx="300" cy="250" r="5" />
+        <circle cx="480" cy="300" r="5" />
+    </svg>
+
+![Path-11.jpg](./images/Path-11.jpg)
+
+What about that third value? This control rotation of the **arc**. For
+circular **arc** they won't have an effect since circle are symmetric. But if
+you make **Radian** different so you get an ellipse changing this value will
+rotate the ellipse.
+
+
+      <path d="M300 250 A100 100 0 1 0 480 300" fill="red" />
+                                 ^ ^
+                                 ^ ^
+      <path d="M300 250 A100 200 90 1 0 480 300" fill="red" />
+                          ^   ^  ^  ^ ^
+                          ^   ^  ^  ^ sweep the "arc"
+                          ^   ^  ^  largeArc
+                          ^   ^  rotate
+                          ^   y radius
+                          x radius
+
+![Path-12.jpg](./images/Path-12.jpg)
