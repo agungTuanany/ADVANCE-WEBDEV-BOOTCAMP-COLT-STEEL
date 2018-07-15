@@ -1,0 +1,34 @@
+body {
+  margin: 0px;
+  padding: 0 0 0 20px;
+}
+#bahamas {
+  width: 600px;
+  height: 300px;
+  background: #007788;
+}
+
+#jamaica {
+  width: 600px;
+  height: 300px;
+  background: black;
+}
+
+#macedonia {
+  width: 600px;
+  height: 300px;
+  background-color: #D20000;
+}
+
+#south-korea {
+  width: 600px;
+  height: 400px;
+}
+
+#indonesia {
+  width: 600px;
+  height: 300px;
+  background: white;
+  border: 1px solid black;
+
+}

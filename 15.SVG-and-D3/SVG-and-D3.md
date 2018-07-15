@@ -138,10 +138,10 @@ Lets draw rectangle on SVG
          baseProfile="full"
          xmlns="http://www.w3.org/2000/svg">
       <rect x="50" y="50" width="300" height="200" fill="#ffc107"
-      stroke="2196f3" stroke-width="8px" />
+        stroke="2196f3" stroke-width="8px" />
       <rect x="100" y-"200" width="300" height="400" fill="e91e63"
-      stroke="#795548" stroke-width="8px"/>
-    </svg>
+        stroke="#795548" stroke-width="8px"/>
+      </svg>
 
 A couple of things to notice here, First if your shape exist the bound of SVG it
 will get crop element. Non SVG don't extend the bound of SVG. Second there is
@@ -262,12 +262,12 @@ center.
          xmlns="http://www.w3.org/2000/svg">
          <polygon .../>
          <text x="400" y="430">Starry staryy SVG</text>
-     </svg>
+    </svg>
 
 ![Text-1.jpg](./images/Text-1.jpg)
 
-If you want center the text there are a are a couple ways to do it. One is to
-use **dx** or **dy** attributes to shift the text element from anchor point
+If you want center the text there are a couple ways to do it. One is to use
+**dx** or **dy** attributes to shift the text element from anchor point
 horizontally or vertically. However this require you before hand the amount you
 need to shift by.
 
@@ -314,7 +314,7 @@ can even can set **color**. However unlike font outside of SVG we need to set
 **color** with **fill** and **stroke** just like other SVG elements.
 
     <text x="400" y="430" text-anchor="middle" font-size="1.5em"
-    font-family="sans-serif" fill="white" stroke-width="1px" stroke="black">
+      font-family="sans-serif" fill="white" stroke-width="1px" stroke="black">
     Strayy starry SVG</text>
 
 We can also **rotate** text this is particularly helpful if you try to label
@@ -600,3 +600,207 @@ rotate the ellipse.
                           x radius
 
 ![Path-12.jpg](./images/Path-12.jpg)
+
+## Exercise and Solution SVG Flags
+
+##### Bahamas Flags
+
+We can do this by joining three rectangles and triangles but to make things
+a little simpler, I instead set a background-color in SVG which is same with
+blue color with flags. At this way I only need two shape a rectangle and
+triangle.
+
+For the rectangle I'll use the **rect** element instead the following attributes:
+
+    <rect x="0" y="100" width="600" height="100" fill="#FFC72C">
+
+For the triangle I'll use **polygon** element. Here I just declare the point
+I need:
+
+    <polygon points="0 0, 260 150, 0 300" />
+                      ^       ^     ^
+                      ^       ^   The bottom left corner
+                      ^       ^  one in the middle
+                      ^ One in the top left corner
+
+The code will be:
+
+    <svg version ="1.1"
+         baseProfile="full"
+         xmlns="http://www.w3.org/2000/svg"
+         id="bahamas">
+      <rect x="0" y="100" width="600" height="100" fill="#FFC72C" />
+      <polygon points="0 0, 260 150, 0 300" />
+    </svg>
+
+![Bahama-flag.jpg](./Exercise-SVG-Flags/images/Bahama-flag.jpg)
+
+##### Jamaica Flags
+
+In Jamaica flags I use same background trick here, I'll set it to black. For
+the green and yellow part of flag I could create it a bunch different
+**polygon**, **path** elements, but instead I just create two.One for each green
+triangle.
+
+To add the yellow of the flag I'll set the **stroke**, **width** and **polygon**.
+Since both polygon have same color-style I create a **group** inside of it
+**stroke**, **stroke-wdith** and **fill** attributes at the group level. Inside
+of my group I create a **polygon** for the top triangle. Note that if I put
+triangle of the corner of SVG the yellow **Stroke** also applies to the top
+which i don't want, to fix this I back-up the top corners, so if they fall
+outside the bounce of the SVG.
+
+
+    <g stroke="#FED100" fill="#009B3A" stroke-width="50">
+      <polygon points="-300 -150, 300 150, 900 -150" />
+    </g>
+
+Now I can do something similar for bottom triangle just with different **y**
+coordinates.
+
+      <polygon points="-300 450, 300 150, 900 -150" />
+
+The all code will be:
+
+    <svg version ="1.1"
+         baseProfile="full"
+         xmlns="http://www.w3.org/2000/svg"
+         id="jamaica">
+      <g stroke="#FED100" fill="#009B3A" stroke-width="50">
+        <polygon points="-300 -150, 300 150, 900 -150" />
+        <polygon points="-300 450, 300 150, 900 450" />
+      </g>
+    </svg>
+
+![Jamaica-flag.jpg](./Exercise-SVG-Flags/images/Jamaica-flag.jpg)
+
+##### Macedonia Flag
+
+For Macedonia I set the background-color to "red" shape, and then I create
+a **group** who's **fill** the yellow color.
+
+To get raise coming out the circles I just make four **polygon**.
+
+1. One for each diagonal
+2. One for the vertical raise
+3. One for the horizontal once
+
+    <g fill="#FFE600">
+      <polygon points="0 0, 600 300, 510 300, 90 0" />
+      <polygon points="330 0, 270 300, 330 300, 270 0" />
+      <polygon points="600 0, 0 300, 90 300, 510 0" />
+      <polygon points="0 120, 600 180, 600 120, 0 180" />
+    </g>
+
+Next I place the circle at the middle of the flag and give it the red
+**stroke** so that the raise of separated from your circle.
+
+    <circle cx="300" cy="150" r="50" stroke="#D20000" stroke-width="10" />
+
+The all code will be:
+
+    <svg version ="1.1"
+         baseProfile="full"
+         xmlns="http://www.w3.org/2000/svg"
+         id="macedonia">
+      <g fill="#FFE600">
+        <polygon points="0 0, 600 300, 510 300, 90 0" />
+        <polygon points="330 0, 270 300, 330 300, 270 0" />
+        <polygon points="600 0, 0 300, 90 300, 510 0" />
+        <polygon points="0 120, 600 180, 600 120, 0 180" />
+        <circle cx="300" cy="150" r="50" stroke="#D20000" stroke-width="10" />
+      </g>
+    </svg>
+
+
+![Macedonia-flag.jpg](./Exercise-SVG-Flags/images/Macedonia-flag.jpg)
+
+##### South Korea Flag
+
+This one is definitely little bit tricky. First Let me Focus on the "black
+bars", to draw them I create a group inside it **stroke** **stroke-wdith** and
+**transform** attributes on the group. And transforming to the center of the SVG
+because I'm going to create this line vertically and then rotate them. And
+I want to be sure I rotated about the center of SVG not the origin which is
+upper-left corner.
+
+    <g stroke="black" sroke-width="15" transform="translate(300,200)">
+    <g/>
+
+So that I can practice with **path** let me use **path** elements for most of
+this. First I draw the three line to the upper left and the six line in to the
+bottom right of the flag.
+
+Here the **solid-line** and the **dash-line** I wrote:
+
+    <path d="M-200 -50v100m25 0v-100m25 0v100 M140-50v45m0 10v45m25 0v-45m0 -10v-45m25 0v45m0 10v45"
+              ^     ^     ^     ^   ^   ^     ^     ^       ^   ^      ^      ^    ^    ^  ^    ^
+              ^     ^     ^     ^   ^   ^     ^     ^       ^   ^      ^      ^    ^    ^  ^  6 dash-line in 3rd row
+              ^     ^     ^     ^   ^   ^     ^     ^       ^   ^      ^      ^    ^    ^  move the cursor for the same line
+              ^     ^     ^     ^   ^   ^     ^     ^       ^   ^      ^      ^    ^    5th dash-line in 3rd row
+              ^     ^     ^     ^   ^   ^     ^     ^       ^   ^      ^      ^  move the cursor for 3rd short line
+              ^     ^     ^     ^   ^   ^     ^     ^       ^   ^      ^  4th dash-line 2nd row
+              ^     ^     ^     ^   ^   ^     ^     ^       ^   ^ 3rd dash-line 2nd row
+              ^     ^     ^     ^   ^   ^     ^     ^       ^  move the cursor for 2nd short line
+              ^     ^     ^     ^   ^   ^     ^     ^  2nd dash-line same row
+              ^     ^     ^     ^   ^   ^     ^     1st dash-line
+              ^     ^     ^     ^   ^   ^   move the cursor for short line
+              ^     ^     ^     ^   ^   3rd solid line
+              ^     ^     ^     ^   move over
+              ^     ^     ^   2nd solid line
+              ^     ^     move over
+              ^     1st solid line
+              move the cursor for solid line
+
+      transform="rotate(30)">
+
+Hint:
+
+    M - m   : move the cursor
+    V - v   : vertical line
+
+Next I do something very similar for the second set of line, I just need to
+adjust the **solid-line** and **dash-line** are.
+
+    <path d="M-200 -50v100m25 0v-45m0-10v-45m25 0v100 M140-50v45m0 10v45m25
+      0v-100m25 0v45m0 10v45" transform="rotate(-30)"/>
+
+Once I got this I rotate in the opposite direction. Now I need to do is put the
+**circle** on the center. I use three different elements to do this, but if you
+are awesome SVG **path** you can do with your elements. 
+
+First I just draw the red-circle on the middle.
+
+    <circle cx="300" cy="200" fill="#CD2E3A" r="90" />
+
+Next I draw the blue **arc** to get part of the lower half of the blue area.
+From the end point of this blue **arc**, I just draw a second blue **arc** to
+the tale of the blue shape. Like before I use lower case letter, so I don't need
+to calculate absolute position of this coordinates.
+
+    <path fill="#0047A0" d="M300 200a45 45 0 0 1 78 45A90 90 0 1 1 300 110" />
+
+I make one more element a red **Path** to cover the extra area I created with my
+blue **path**. I start with creating for the head of red area and then create
+one more **arc** to cover up the rest of unknown necessary blue area.
+
+    <path fill="#CD2E3A" d="M300 200a45 45 0 0 1 -78 -45A90 90 0 0 1 300 110" />
+
+The all code will be:
+
+    <svg version ="1.1"
+         baseProfile="full"
+         xmlns="http://www.w3.org/2000/svg"
+         id="south-korea">
+      <g stroke="black" stroke-width="15" transform="translate(300,200)">
+      <path d="M-200 -50v100m25 0v-100m25 0v100 M140-50v45m0 10v45m25 0v-45m0
+        -10v-45m25 0v45m0 10v45" transform="rotate(30)"/>
+      <path d="M-200 -50v100m25 0v-45m0-10v-45m25 0v100 M140-50v45m0 10v45m25
+        0v-100m25 0v45m0 10v45" transform="rotate(-30)"/>
+      </g>
+      <circle cx="300" cy="200" fill="#CD2E3A" r="90" />
+      <path fill="#0047A0" d="M300 200a45 45 0 0 1 78 45A90 90 0 1 1 300 110" />
+      <path fill="#CD2E3A" d="M300 200a45 45 0 0 1 -78 -45A90 90 0 0 1 300 110" />
+    </svg>
+
+![South-Korea-flag.jpg](./Exercise-SVG-Flags/images/South-Korea-flag.jpg)
