@@ -804,3 +804,192 @@ The all code will be:
     </svg>
 
 ![South-Korea-flag.jpg](./Exercise-SVG-Flags/images/South-Korea-flag.jpg)
+
+## Introduction to SVG and D3
+
+We combine a knowledge SVG and D3 to create a simple **bar-chart**. Lets start
+by putting data and data visualization. Here I got some data from the **UN**  on
+the number of birth around the world by _year_ and _month_. The data got from
+**1967** to **2014**. Our goal is to make a simple bar-chart along with the way
+to adjust the year and see the bar-chart is update.
+
+The first thing I do is grab the first and last year and update the min and max
+and value attributes on our input. This code it seems come from the first
+elements from my data site the last year is come from the last data site.
+
+    var minYear = birthData[0].year;
+    var maxYear = birthData[birthData.length - 1].year;
+
+    d3.select("input")
+        .property("min", minYear)
+        .property("max", maxYear)
+        .property("value", minYear);
+
+Typically I write this code inside on the **eventListener** that wait for the
+DOM content to load, however for these tutorial I would like be able easily to
+look it my variable on the console. For that reason I just make everything global
+for now. In your own project thought you should be wrap your code inside in
+**eventListener** so you don't pollute the global scope with the bunch variables.
+
+Next lets set **width** and **high** for SVG and try to append some **rectangles**.
+Since the input current value is for the first year 1967 I only one to joint data
+from that year to my **rectangles** I use a **filter** to remove any data that
+isn't form that first year, there is also a helper method call **d3.nest()**
+which will allow use restructure our data.
+
+    var width = 600;
+    var height = 600;
+
+    d3.select("svg")
+        .attr("width", width)
+        .attr("height", height)
+      .selectAll("rect")
+      .data(birthData.filter(function(d) {
+        return d.year === minYear;
+      }))
+      .enter()
+      .append("rect")
+      ....
+      ....
+
+I need to figure out what attributes to set on each rectangles. One of the hardest
+part using D3 to visualize data usually is not **data binding**, is figuring out
+how to translate the joint data into the appropriate visual. Before we get actual
+bar-chart lets first try to render the **bars** on the SVG with **sum** width and
+height.
+
+I pick a width for each rectangle, and for now lets have them span full high of
+SVG, this mean that the **y** coordinate each rectangle should be zero. What
+about the **x** coordinate?
+
+      var barWidth = 25;
+
+      .append("rect")
+        .attr("width", barWidth)
+        .attr("height", height)
+        .attr("y", 0)
+        ....
+        ....
+
+Well we want first rectangle to be on the left the next one to be "25px" over,
+and the next one will be "25px" again and so on.
+
+![SVG-and-D3-1.jpg](./Introduction-to-SVG-and-D3/images/SVG-and-D3-1.jpg)
+
+We can express this mathematically if we can keep track of the index of our current
+piece data in the birth data array. We can then use this index to **offset** each
+**bar** base on the **bar** width.
+
+      var barWidth = 25;
+
+      .append("rect")
+        .attr("width", barWidth)
+        .attr("height", height)
+        .attr("y", 0)
+        .attr("x", function(d,i) {
+          return barWidth * i;
+      })
+
+![SVG-and-D3-2.jpg](./Introduction-to-SVG-and-D3/images/SVG-and-D3-2.jpg)
+
+We might look like we got one rectangle on the SVG, but these actually all of
+rectangle squish together. If we want to give space a bit we can add some **padding**
+and then shift **x** coordinate over by the **barWidth**  plus the amount padding.
+Let me also change the default **fill** for the rectangle. Now it's clear there
+are multiple rectangle in SVG.
+
+      var barWidth = 25;
+      var barPadding = 10;
+
+      .append("rect")
+        .attr("width", barWidth)
+        .attr("height", height)
+        .attr("y", 0)
+        .attr("x", function(d,i) {
+          return (barWidth + barPadding) * i;
+        })
+        .attr("fill", "purple")
+
+![SVG-and-D3-3.jpg](./Introduction-to-SVG-and-D3/images/SVG-and-D3-3.jpg)
+
+Setting the bar width "25px" which fairly arbitrary and in this case we want end
+up with the bunch unuse space on the SVG, very often we see barWidth is depend
+on the width of SVG it self along with the amount padding you want between bars.
+In this case better approach will be take the SVG width divide by the number bar
+we have and subtract the amount of padding, this way the total width the number
+of bars plus the amount of padding per bar will be the same as the SVG width.
+
+    var barPadding = 10;
+    var numBars = 12;
+    var barWidth = width / numBars - barPadding;
+
+Now lets tackle the height with this rectangle. This part is bit tricky because
+the **y** coordinate work with SVG. Remember that **0,0** point it's upper
+left-corner of the SVG not the lower left-corner. This doesn't matter so much of
+the height attributes which we know should be base number of birth. Lets just make
+**height** equal to the value the birth properties for each piece of data.
+
+    .enter()
+    .append("rect")
+      .attr("width", barWidth)
+      .attr("height", function(d){
+        return d.births;
+      })
+      .....
+      .....
+
+What about the **width** value? It isn't **0** instead we need the value
+for this attributes to be the **y** coordinate of the upper left-corner of the bar
+this means we need to take the height of SVG and subtract of desire bar height
+in order to obtain the correct **y** coordinate.
+
+![SVG-and-D3-4.jpg](./Introduction-to-SVG-and-D3/images/SVG-and-D3-4.jpg)
+
+
+    .append("rect")
+      .attr("width", barWidth)
+      .attr("height", function(d){
+        return d.births;
+      })
+      .attr("y", function(d) {
+        return height - d.births;
+      })
+      .....
+      .....
+
+If we refresh the page things don't look right at all. Total birth is recorded
+since 1967 where relatively low, especially compare to now. But all these bars
+with the same height as before. If we looking on the element tabs we can find
+the problem. Because our **height** and **y** coordinate are tight directly to
+birth numbers, there value are much much larger then dimension of the SVG. What we
+need to do is **scale** the data so they fit properly with in a bounce of the SVG.
+
+![SVG-and-D3-5.jpg](./Introduction-to-SVG-and-D3/images/SVG-and-D3-5.jpg)
+
+For now lets do this manually. In the next we will run how to automate this
+process. No month have more then 2.5 million birth so if we divide all of birth
+number with 2.5 million and then multiple by the SVG **height** we get value
+between **0** and **600**. 
+
+    .append("rect")
+      .attr("width", barWidth)
+      .attr("height", function(d){
+        return d.births / 2.5e6 * height;
+      })
+      .attr("y", function(d) {
+        return height - d.births / 2.5e6 * height;
+      })
+      ....
+      ....
+
+The last step is to get that range working. We use D3 to add listener for input
+event on the input. The event target value will be the year from 1967 to 2014
+and we want that convert to the number. Once we now the new year we just grab
+each rectangle and update **height** and **width** attributes base of number
+monthly birth for that year. Be sure to scale your data appropriately.
+
+There's plenty more we can do here for example the graph isn't label at all, it
+would be nice to have label or at least have label for individual bars so it clear
+what they represent. We also have to do a lot of math to figure out how to drop
+this rectangles, fortunately D3 can help us out with some out arithmetic quit
+a bit.
