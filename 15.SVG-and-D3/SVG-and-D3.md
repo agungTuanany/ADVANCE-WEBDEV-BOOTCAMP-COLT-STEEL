@@ -988,8 +988,242 @@ and we want that convert to the number. Once we now the new year we just grab
 each rectangle and update **height** and **width** attributes base of number
 monthly birth for that year. Be sure to scale your data appropriately.
 
+![SVG-and-D3-6.jpg](./Introduction-to-SVG-and-D3/images/SVG-and-D3-6.jpg)
+
 There's plenty more we can do here for example the graph isn't label at all, it
 would be nice to have label or at least have label for individual bars so it clear
 what they represent. We also have to do a lot of math to figure out how to drop
 this rectangles, fortunately D3 can help us out with some out arithmetic quit
 a bit.
+
+## Exercise and Solution Character Frequencies Revisited
+
+Before we get into JavaScript lets first make some small tweaks to the HTML and
+CSS. In my HTML I made the change of some **id** of **letters** from a "div" to
+an SVG elements.
+
+    <svg
+      version="1.1"
+      baseProfile="full"
+      xmlns="https://www.we.org/2000/svg"
+      id="letters">
+    </svg>
+
+Next I can make slight modification to this CSS file. For one I set the SVG in
+my JavaScript so I can remove this width property base on **id** of **letters**.
+
+    #letters {
+      margin: 20px auto 0;
+      width: 800px;
+    }
+
+    into:
+
+    #letters {
+      margin: 20px auto 0;
+    }
+
+Next since the element with the class of **letter** will now the SVG rectangles
+I can remove these property, the only thing I care is the color which should now
+be the value of **fill** property not the value of **background-color** property.
+
+    .letter {
+      display: inline-block;
+      text-align: center;
+      background-color: #FFC800;
+      vertical-align: bottom;
+    }
+
+Into:
+
+     .letter {
+       fill: #FFC800;
+     }
+
+I also update m styling for my **.new** class since I want to use **text** label
+to start for now I indicate is new just by updating the **fill** on **rect**
+element.
+
+    .new{
+      font-size: 1.5en;
+      color: #FFFFFF;
+    }
+
+Into:
+
+    .new {
+      fill : #00FF00;
+    }
+
+
+Now lets start with updating JavaScript. I just set a variable **width**, **height**.
+I also set **barPadding**. Now  that I have **width** and **height** let me set
+this attributes on the SVG and store the selection into variables.
+
+    var width = 800;
+    var height = 400;
+    var barPadding = 10;
+    var svg = d3.select("svg")
+                    .attr("width", width)
+                    .attr("height", height);
+
+Next lest Hub into **eventListener** for the form submission. This shouldn't
+look different from before one thing I do differently thought is the result my
+"getfrequncies()" function call inside the variable. That way I can use same
+pattern we saw in D3 and SVG video to calculate the **barWidth** base on the number
+of rectangle and trying to draw along with **barPadding** also since I already
+store D3 SVG selection as variable, I can replace my **d3.select** call with
+that variable.
+
+We almost done with basic variable functionality.
+
+    d3.select("form")
+        on("submit", function() {
+          d3.event.preventDefault();
+          var input = d3.select("input");
+          var text = input.property("value");
+
+          var letters = d3.select("#letters")
+                          .selectAll("letter")
+                          .data(getFrequencies(text), function(d) {
+                            return d.character;
+                              });
+          ......
+          ......
+        })
+
+Into:
+
+    d3.select("form")
+        .on("submit", function() {
+          d3.event.preventDefault();
+          var input = d3.select("input");
+          var text = input.property("value");
+          var data = getFrequencies(text);
+          var barWidth = width / data.length - barPadding;
+
+          var letters = svg
+                          .selectAll(".letter")
+                          .data(data, function(d) {
+                            return d.character;
+                          });
+          .......
+          .......
+        });
+
+We almost done with basic functionality. We don't need change the **exit** selection
+and for the **enter** selection, we just need to change what we are **appending**
+from a "div" to **rect** element.
+
+    d3.select("form")
+    .....
+    .....
+
+      var letters = d3.select("#letters")
+                    ......
+                    ......
+
+      letters()
+        .enter()
+        .append("div")
+        .classed("letter", true)
+        .....
+
+Into
+
+
+
+    d3.select("form")
+    .....
+    .....
+
+      var letters = d3.select("#letters")
+                    ......
+                    ......
+
+      letters()
+        .enter()
+        .append("rect")
+        .classed("letter", true)
+        .....
+
+Now all it's left is to changes what we do with the **merge** selection. Since I',m
+not working with "div" anymore some of the attributes I want to update will be
+different. Let me start with the "width" this attributes I want to keep but it's
+value should now equal with **barWidth** I calculate above. I also still need
+a **height** attributes, I just leave just as is, the well I change is remove
+the "**px**" attributes.
+
+    .merger(letters)
+      .style("width" "20px")
+      .style("line-height", "20px")
+      .style("height", function(d) {
+        return d.count * 20 + "px";
+          })
+      .text(function(d) {
+        return d.character;
+        });
+
+Into:
+
+    ......
+    ......
+      .merge(letter)
+        .style("width", barWidth)
+        .style("line-height", "20px")
+        .style("margin-right", "5px")
+        .style("height", function(d) {
+            return d.count * 20;
+        })
+        .......
+        .......
+
+Setting a fix **height** could be problematic if we enter a string which is
+really high frequency count for particularly character. But giving a what we now
+so far by D3 I don't think is worth try to count for this potential issue.
+
+Setting inner text in rectangle is not make sense. So we can remove this line.
+
+    .....
+    .....
+    .text(function(d) {
+      return d.character;
+    });
+
+We can also remove the **line-height** and **margin-right**
+
+    .....
+    .....
+    .merge(letter)
+      .style("width", barWidth)
+      .style("line-height", "20px")   << remove this
+      .style("margin-right", "5px")   << remove this
+    ......
+    ......
+
+Instead we need **x** and **y** attributes on our rectangles. The value for **x**
+attributes should look the same as in D3 and SVG. Each **x** coordinate should be
+**offSet** by another multiple the **barWidth** + the **barPadding**. As for the 
+**y** coordinate it's should just equal for the SVG **height** minus the height
+of the bar, in other word it should equal the SVG **height - d.count * 20**
+
+
+      letters
+        .enter()
+        .append("rect")
+          .....
+          .....
+        .merge(letters)
+          .....
+          .....
+          .attr("x", function(d, i) {
+            return (barWidth + barPadding) * i;
+          })
+          .attr("y", function(d) {
+            return height - d.count * 20;
+          })
+
+Lets refresh the page, when I enter a **phrase** I see the bar showing up.
+
+
+
