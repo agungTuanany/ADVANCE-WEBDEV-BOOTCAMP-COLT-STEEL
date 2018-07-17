@@ -1067,7 +1067,7 @@ this attributes on the SVG and store the selection into variables.
                     .attr("width", width)
                     .attr("height", height);
 
-Next lest Hub into **eventListener** for the form submission. This shouldn't
+Next lets Hub into **eventListener** for the form submission. This shouldn't
 look different from before one thing I do differently thought is the result my
 "getfrequncies()" function call inside the variable. That way I can use same
 pattern we saw in D3 and SVG video to calculate the **barWidth** base on the number
@@ -1203,7 +1203,7 @@ We can also remove the **line-height** and **margin-right**
 
 Instead we need **x** and **y** attributes on our rectangles. The value for **x**
 attributes should look the same as in D3 and SVG. Each **x** coordinate should be
-**offSet** by another multiple the **barWidth** + the **barPadding**. As for the 
+**offSet** by another multiple the **barWidth** + the **barPadding**. As for the
 **y** coordinate it's should just equal for the SVG **height** minus the height
 of the bar, in other word it should equal the SVG **height - d.count * 20**
 
@@ -1225,5 +1225,94 @@ of the bar, in other word it should equal the SVG **height - d.count * 20**
 
 Lets refresh the page, when I enter a **phrase** I see the bar showing up.
 
+![Character-Frequencies-Revisited-1.jpg](./Character-Frequencies-Revisited/images/Character-Frequencies-Revisited-1.jpg)
 
+The second **phrase** we see the result.
 
+![Character-Frequencies-Revisited-2.jpg](./Character-Frequencies-Revisited/images/Character-Frequencies-Revisited-2.jpg)
+
+Now lets briefly tackle the bonus. There are several way to do this, but it's
+little tricky because for each data-point you now need a couple of thing's for
+the user to see a **rectangle** and **text** element. For now we **append** the
+**group (g)** elements for each data-point. Now inside this group I want to
+append the **text** element and **rect** element, to do this I also store the
+**enter** selection in variable which I call **letterEnter** rather then merging
+right away.
+
+    var letterEnter = letters
+        .enter()
+        .append("g")
+          .classed("letter", true)
+          .classed("new", true);
+
+Let me first **append** twice for each element and in the **enter** selection.
+
+    letterEnter.append("rect");
+    letterEnter.append("text");
+
+I also need two **merge** selection one for **rect** and one for **text** element.
+Lets do for rectangle first since basically we have written this code, the only
+thing I need to do is select each **rect** inside each **group (g)** in the **merge**
+selection before updating attributes there's specific to the rectangle.
+
+    letterEnter.merge(letters)
+      .select("text")
+      .attr("x", function(d, i) {
+        return ( barWdith + barPadding ) * i;
+      })
+      .attr("y", function(d) {
+        return height - d.count + 20;
+      })
+
+Next I use similar pattern for the **text** element, once I've selected these
+elements I set the **x** coordinates to be the **mid-point** each bar and the
+**y** coordinate to be a little higher then the top of the bar. I also set the
+inner text.
+
+    letterEnter.merge("letters")
+      .select("text")
+      .attr("x", function(d, i) {
+        return ( barWidth + barPadding ) * i + barWidth / 2;
+      })
+      .attr("text-anchor", "middle")
+      .attr("y", function(d) {
+        return height - d.count * 20 -10;
+      })
+      .text(function(d) {
+        return d.character;
+      })
+
+Last thing I do update some of CSS style, these fill property I just want to set
+only for rectangle not for entire group. For the text I do some similar to what
+we did before by making new character a bit large by making new character a bit
+larger.
+
+    .letter {
+      fill: FFC800;
+    }
+
+    .new {
+      fill: #00FF00;
+    }
+
+Into
+
+    .letter rect {
+      fill: #FFC800;
+    }
+
+    .new rect {
+      fill fill: #OOFFOO;
+    }
+
+    .new text {
+      font-size: 1.5em;
+    }
+
+Lets look the result.
+
+![Character-Frequencies-Revisited-3.jpg](./Character-Frequencies-Revisited/images/Character-Frequencies-Revisited-3.jpg)
+
+The second **phrase** we see the result.
+
+![Character-Frequencies-Revisited-4.jpg](./Character-Frequencies-Revisited/images/Character-Frequencies-Revisited-4.jpg)
