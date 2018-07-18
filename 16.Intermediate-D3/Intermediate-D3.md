@@ -613,3 +613,188 @@ Eventually you should laying on code that looks something like this:
 
 Its definitely a lot clearly now what a graph representing, there are further
 enhancement we could make, but we stop right here for now.
+
+
+### Scatterplot Exercise and solution
+
+ Let me start with creating a variable for the **width**, **height** and **padding**.
+
+    var width = 800;
+    var height = 600;
+    var padding = 50;
+
+Now lets filter the data, I'm interested in four variables: **subscribersPer100**,
+**AdultLiteracyRate**, **medianAge** and **urbanPopulationRate**. There for if
+the country doesn't have data on one of these variable, I want to remove it from
+my data-set. In order to remove incomplete from my data-set, I first create
+a helper function call **mustHaveKeys()**, this function will take in an object
+and will check weather the object has value for each the four keys that I'm
+interested in. To do this I loop through my array of keys and check weather the
+value for that keys my object is null, if it's I return false, but if the object
+has none null value for each of these keys I return true.
+
+    function mustHaveKeys(obj) {
+      var keys = [
+        "subscribersPer100",
+        "adultLiteracyRate",
+        "medianAge",
+        "urbanPopulationRate"
+      ];
+
+      for (var i = 0; i < keys.length; i ++) {
+        if(obj[keys[i]] === null) return false;
+      }
+      return true;
+    };
+
+I use this helper function by call in filter on **regionData** passing in this helper
+and storing the result in a variable I call **data**.
+
+    var data = regionData.filter(mustHaveKeys);
+
+Our **data** variable will consist only of region that have data on each of four
+variable I'm interested in. It's look like this is working. **regionData** has **195**
+elements in it, but **data** has only **146** elements.
+
+![Scatterplots-Exercise-1.jpg](./Scatterplots-Exercise/images/Scatterplots-Exercise-1.jpg)
+
+Lets keep going, next I setup my **scale**, I want to measure **literacy-Rate**
+on the **x** axis and **cell-subscriber** on the **y** axis. So for the **x**
+axis I create a linear scale with **d3.scaleLinear**, inside of the domain I use
+**d3.extent()** to find smallest and largest literacy-Rate, since this value
+should be map to SVG bans in **range** method I pass in an array start from
+**padding** and goes up with **width** minus **padding**.
+
+    var xScale = d3.scaleLinear()
+                  .domain(d3.extent(data => d => d.adultLiteracyRate))
+                  .range([padding, width - padding]);
+
+Our **y** scale look very similar. I just need to make a few adjustment the key
+I interested in inside the callback to **d3.extent** finally I change the **range**
+so that I'm referencing the **height**, I also do the same trick before flip the
+largest in smallest values, so the smallest data-point get map to the lowest
+part of the SVG.
+
+    var yScale = d3.scaleLinear()
+                  .domain(d3.extent(data => d => d.subscribersPer100))
+                  .range([height - padding, padding]);
+
+As I mention before I also interested visualizing a couple more variables. I use
+the **radius** visualize the **medium age** and I use the **fill** to visualize
+the proportion of the region that leave in urban area. So I need two more **scale**
+One for each this variables. For radius scale I pass in **range** from **5** to
+**30**, for the fill scale I pass in **range** from **yellow** to **red**.
+
+    var rScale = d3.scaleLinear()
+                   .domain(d3.extent(data, d => d.medianAge))
+                   .range([5, 30]);
+
+    var fScale = d3.scaleLinear()
+                   .domain(d3.extent(data, d => d.urbanPopulationRate))
+                   .range(["green", "red"]);
+
+Enough for the setup. Lets plot some **circle**, since I need a references for
+a few places I start by selecting the SVG with D3 and storing the selection in
+a variable. While I'm here I set up with **width** and **height**.
+
+    var svg = d3.select("svg")
+                  .attr("width", width)
+                  .attr("height", height);
+
+Next lets apply our common D3 pattern to add circle to the page. From the SVG
+I select all circle join my data up into **enter()** selection append circle and
+then set the attributes. For the **cx** and **cy** I already build a scale, so
+I just need to use them inside the callback to **.attr()**, while I'm here
+I also get each circle a **white** stroke so that easier to spot the circle when
+they overlap.
+
+    svg
+      .selectAll("circle")
+      .data(data)
+      .enter()
+      .append("circle")
+        .attr("cx", d => xScale(d.adultLiteracyRate))
+        .attr("cy", d => yScale(d.subscribersPer100))
+        .attr("r", d => rScale(d.medianAge))
+        .attr("fill", d => fScale(d.urbanPopulationRate))
+        .attr("stroke", "#fff");
+
+Lets refresh the page.
+
+![Scatterplots-Exercise-2.jpg](./Scatterplots-Exercise/images/Scatterplots-Exercise-2.jpg)
+
+We not finish yet thought, I still need add some **labels** and **axes** this
+pattern is should look the same early lecture on axes. To start I create a variable
+call **xAxis** and store D3 axes as a value, I pass the **xScale** into **d3.axisBottom()**
+then set the **tickSize()** and **tickSizeOuter()**.
+
+    var xAxis = d3.axisBottom(xScale)
+                  .tickSize(- height + 2 * padding)
+                  .tickSizeOuter(0);
+
+Next I'll do almost the same thing for the **y** axis, the only differences is
+I use left-axis, and **tickSize** depend on width not the height.
+
+    var yAxis = d3.axisLeft(yScale)
+                  .tickSize(- width + 2 * padding)
+                  .tickSizeOuter(0);
+
+While I'm working on text let me also briefly add a style to the CSS file so my
+grid-line wouldn't just a black line.
+
+    .tick line {
+      stroke: #ccc;
+      stroke-dasharray: 10,5;
+    }
+
+Now append the **axes** to the page. For the **x** axis I grab the SVG append
+new **group** transform it, so that it's at the bottom of the SVG and then call
+the **xAxis**.
+
+    svg.append("g")
+        .attr("transform", "translate(0," + (height - padding) + ")")
+        .call(xAxis);
+
+Next I do the same similar with **y** axis, do I need to transform it a bit
+differently.
+
+    svg.append("g")
+        .attr("transform", "translate(" + padding + ",0)")
+        .call(yAxis);
+
+Lastly lest add some text-labels, for the **x** axis I add the text label move
+it to the bottom middle of the SVG bump it down just a little bit the **dy**
+attributes center the text and add a label.
+
+    svg.append("text")
+        .attr("x", width / 2)
+        .attr("y", (height - padding))
+        .attr("dy", padding / 2)
+        .style("text-anchor", "middle")
+        .text("Literacy Rate, Aged 15 and Up");
+
+For the **y** axis I append the text element, rotate it adjust the location,
+center the element, and then add some inner text.
+
+    svg.append("text")
+        .attr("transform", "rotate(-90)")
+        .attr("x", - height / 2)
+        .attr("dy", padding / 2)
+        .style("text-anchor", "middle")
+        .text("Cellular Subscribers per 100 People");
+
+Getting the **y** axis in the right position is little tricky so don't worry if
+this take a couple tries. Lastly I add a title Once again I append a text label
+and place it this time is in the top middle on the SVG, I bum up the size a bit
+and then add a title.
+
+    svg.append("text")
+        .attr("x", width / 2)
+        .attr("dy", "1em")
+        .style("text-anchor", "middle")
+        .style("font-size", "2em")
+        .text("Cellular Subscriptions vs. Literacy Rate");
+
+Lets take a look the result:
+
+![Scatterplots-Exercise-3.jpg](./Scatterplots-Exercise/images/Scatterplots-Exercise-3.jpg)
