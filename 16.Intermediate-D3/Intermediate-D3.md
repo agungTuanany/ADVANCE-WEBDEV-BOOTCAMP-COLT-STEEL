@@ -98,7 +98,7 @@ Into:
       return d.year;
     });
 
-    var mmaxYear = d3.max(birthData, function(d) {
+    var maxYear = d3.max(birthData, function(d) {
       return d.year;
     });
 
@@ -427,3 +427,189 @@ the **birth-per-capita**, for this we need one more **scale**.
 
 Now our scatter plot help us to visualize relationship between four variables.
 **births**, **birth-per-capita**, **lifeExpectancy** and **populationDensity**
+
+### Axes and Gridlines
+
+#### Axes
+
+In this section we continue to improve the Scatter-plots we made by adding a **title**,
+**axes** and **gridLines**. We know it's been visualize because we wrote the code
+but imagine if you share this scatter-plot with friends of yours, they have no
+idea what data is suppose to represent, there are no **labels** no **axes**,
+there is no information of any kind on the page about what exactly we looking at,
+lets fix that.
+
+The firs thing we do create some **axes**, graph **axes** is difficult to draw
+on your own, you need to draw a line representing the **axes** along with
+**tick-marks** and **text-label** for each tick-marks.
+
+![Axes-1.jpg](./Scatterplots/images/Axes-1.jpg)
+
+Doing all this from scratch quit nor deal, fortunately D3 has method that would
+to take care all busy work for you. There are four method D3 uses to create **axes**
+
+    d3.axisTop(scale)
+    d3.axisRight(scale)
+    d3.axisBottom(scale)
+    d3.axisLeft(scale)
+
+All these method taken a **scale** and return an function that can generate an **axes**
+in SVG. The method we choose determine where the **text-label** with sit relatively
+to the **axes**.
+
+    var radiusScale = d3.scaleLinear()
+                        .domain(d3.extent(birthData2011, d => d.births))
+                        .range([2, 40]);
+
+Lets wipe out quick **x-axis** using **d3.axisBottom(scale)**.
+
+    var xAxis = d3.axisBottom(xScale);
+
+We pass in **xScale** this pattern is fairly to call, in order to get **axes**
+to show up we need to call the **axes** function we've created on **d3.selection**.
+
+    d3.select("svg")
+      .append("g")
+        .call(xAxis);
+
+![Axes-2.jpg](./Scatterplots/images/Axes-2.jpg)
+
+If we inspected using the elements tabs, we can see there's fair amount going on 
+our axis inside of the group that we append it its got a **path** insisting the
+main **axis** line along with **tick-marks** on other side, inside one of each
+group we got a line for the **tick-marks** along with the **text-label**. The
+position of our **axes** is little less then idle by default D3 append the
+**axes** starting from the origin of the SVG that is upper-left corner. If we
+want **axes** somewhere else we need to move our selves. Lets do that by setting
+**transform** attributes with append it 
+
+    d3.select("svg")
+      .append("g")
+      .attr("transform", "translate(0, " + (height - padding) +")")
+        .call(xAxis);
+
+![Axes-3.jpg](./Scatterplots/images/Axes-3.jpg)
+
+Lets repeat this process with the **y** axis
+
+    var yAxis = d3.axisLeft(yScale);
+
+    d3.select("svg")
+      .append("g")
+        .attr("transform", "translate(" + padding + ", 0)")
+        .call(yAxis);
+
+If you like to add **gridLine** to improve readability of your graph you can do
+that directly from the **axes**. The simple things to do change the size of the
+**ticks** so they stretch across the SVG, the only catch is the graph area
+takes padding into a count so the length of the **ticks** should to.
+
+#### Gridlines
+
+To adjust a link of the **ticks** we can use the **tickSize()** method, and pass
+in desire length.
+
+    axis.tickSize([size])
+
+![Gridlines-1.jpg](./Scatterplots/images/Gridlines-1.jpg)
+
+The ticks will stretch in the direction of the axis label, so for both of our axis
+will want our **ticksizes** to be negative. For the **x** axis this will stretch
+the **tick-up**. We want the total size will to be the negative value of the high
+plus twice the padding.
+
+    var xAxis = d3.axisBottom(xScale)
+                  .tickSize(-height + 2 * padding);
+
+We take very similar approach for the **y** axis
+
+    var yAxis = d3.axisBottom(xScale)
+                  .tickSize(-width + 2 * padding);
+
+![Gridlines-2.jpg](./Scatterplots/images/Gridlines-2.jpg)
+
+Note that the **tick-size** updates the link of the tick with **text-label** and
+the ticks either in the end of the axis. If you don't want to adjust the ticks
+either end of the axis you can set their links separately using the **tickSizeOuter()**
+method.
+
+    axis.tickSizeOuter([size])
+
+
+    var xAxis = d3.axisBottom(xScale)
+                  .tickSize(-height + 2 * padding)
+                  .tickSizeOuter(0);
+
+    var yAxis = d3.axisBottom(xScale)
+                  .tickSize(-width + 2 * padding)
+                  .tickSizeOuter(0);
+
+Lets also add the styling of the **gridLines**, each **gridLines** is inside of
+the group with a class of **tick**, so we select those lightning the **stroke**
+color and make the lines dash using the **stroke-dasharray** property. The value
+for **stroke-dasharray** property is **two** numbers, the **lenght** of the dash
+and the **distance** between dashes.
+
+    .tick line {
+      stroke: #ccc;
+      stroke-dasharray: 10, 5;
+    }
+
+![Gridlines-3.jpg](./Scatterplots/images/Gridlines-3.jpg)
+
+Lets finish things up by adding some **label** to the axis and giving a graph
+to a title. D3 doesn't provide us any secret sauce for adding this things. To
+add these **text-label** we need just to go back to our D3 fundamental.
+
+**Select** the SVG **append** the **text** element positioning correctly and set
+**inner-text**. Here's how we can do that for the **x** axis label, here we
+positioning the text element so that center horizontally and vertically align
+with the **x** axis then we using the **dy** attributes to push it down relative
+to **x** axis, finally we centering the text relative to the **x** attributes
+and setting the text inside of it. We not doing much else to **style** these
+elements fell free to add some style on your own, either using D3 **style**
+method or in CSS file.
+
+
+    d3.select("svg")
+      .append("text")
+        .attr("x", width / 2)
+        .attr("y", height - padding)
+        .attr("dy", "1.5em")
+        .style("text-anchor", "middle")
+        .text("Births per Capita");
+
+Adding a tittle is very similar I bump up text a bit, but otherwise what we
+doing is should look very similar that we just did.
+
+    d3.select("svg")
+      .append("text")
+        .attr("x", width / 2)
+        .attr("y", padding)
+        .style("text-anchor", "middle")
+        .style("font-size", "1.5em")
+        .text("Data on Births by Country in 2011");
+
+All is left now is the **y** axis, this little bit tricky because we need to
+rotate the text **90** degrees, after the rotation we need to be careful with
+**x** and **y** attributes since adjusting the **x** attributes well now move
+the text element in the vertical direction, and adjusting the **y** attributes
+will move the element in the horizontal direction. Getting positioning right can
+take a bit guess and check, if you make a mistake take a look where the element
+round-up using the elements tabs and adjust as necessary.
+
+    d3.select("svg")
+      .append("text")
+        .attr("transform", "rotate(-90)")
+        .attr("x", - height / 2)
+        .attr("y", padding)
+        .attr("dy", "-1.1em")
+        .style("text-anchor", "middle")
+        .text("Life Expectancy");
+
+Eventually you should laying on code that looks something like this:
+
+![Gridlines-4.jpg](./Scatterplots/images/Gridlines-4.jpg)
+
+Its definitely a lot clearly now what a graph representing, there are further
+enhancement we could make, but we stop right here for now.
