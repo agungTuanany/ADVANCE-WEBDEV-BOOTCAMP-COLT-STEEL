@@ -17,7 +17,7 @@ we have:
 
     1. Finding Extreme values manually
         - Inspect a data set find the first and last years.
-        - Manually idendtify the largers value in data set.
+        - Manually identify the largers value in data set.
 
     2. Scaling data manually
         - Doing arithmetic in order to make sure all of rectangle always fit inside the SVG
@@ -164,8 +164,7 @@ Every value in between "1" to "17" get map to appropriate value
 
     >> 28.305
 
-We can use **scale** linear to create a scale mapping our data-values to our SVG
-dimension. Here what looks like.
+We can use **scaleLinear()**
 
     var yScale = d3.scaleLinear()
                   .domain([0, maxBirths])
@@ -237,3 +236,194 @@ Into:
       .attr("y", function(d) {
         return yScale(d.births);
       });
+
+This code is  much flexible then what we have before. It's doesn't depend on the
+specific set data-point, and if we decide to add or to remove data from data-set
+later on we wont need to modify this code.
+
+
+### Scatter Plots
+
+Now we use what we learn about working with **min** **max** and **scale** with
+D3 to build first **Scatter Plots**. In keeping with the theme lets grab some
+more birth data.
+
+This time around I've got data not only on birth but also in **population**,
+**area** and **lifeExpectancy**. This data organize by region and this from **2011**
+in file **birthData** in folder **Scatterplots**. Lets visualize this data with
+scatter plots. On the **y** axis I want to measure **life expectancy** and on the
+**x** axis I want some measurement of **birth**, rather then looking the number
+of birth directly, I look it birth divide by **population** this will give me
+a measurement a birth per **capita** rather then just the total number of birth.
+
+![Scatterplots-1.jpg](./Scatterplots/images/Scatterplots-1.jpg)
+
+In last lecture we learn to use various D3 method to help us work with data.
+Here we need use those methods again. First lets create **scale** for **y** axis
+in order to do that we calculate the **minimum** and **maximum** in **dataset**
+since the **y** axis is measuring **life expectancy** this is the property we
+need to return in callback function.
+
+    var width = 500;
+    var heght = 500;
+
+    var yMax = d3.max(birthData2011, d => d.lifeExpectancy);
+    var yMin = d3.min(birthData2011, d => d.lifeExpectancy);
+
+Note that from here and out I use the **arrow** function for these callback where
+I can. Once we've got **min** and **max** we can create **scale**, as in previous
+lesson we mapping the **minimum** to the **height** and **maximum** to t**0**.
+
+    var yScale = d3.scaleLinear()
+                  .domain({yMin, yMax})
+                  .range([height, 0]);
+
+Before we move on it's worth mentioning a small refactor we can do here. There's
+a term **code duplication** in our logic calculating **min** and **max** we
+could pull callback out into it's own name function but we can also use D3 build
+in **extent** function.
+
+    d3.extent(dataArr[, callback])
+
+Which calculate both minimum and maximum in data set and return both values to us
+in an array. Here is quick example, in this case we've array of people and want to
+know the range of ages, the **extent()** method will return to us an array with
+both small stage and the largest one.
+
+    var people = [
+      { name: "Breet", age: 40 },
+      { name: "Mackenxie", age:30 },
+      { name: "Arya", age: 73 },
+      { name: "Lee", age: 22 }
+    ];
+
+    d3.extent(people, d => d.age);
+
+    >> (2) [22, 78]
+
+We can call this function inside of **scale** domain method directly, the rest
+all of code will be:
+
+    var width = 500;
+    var heght = 500;
+
+    var yScale = d3.scaleLinear()
+                  .domain(d3.extent(birthData2011, d => d.lifeExpectancy))
+                  .range([height, 0]);
+
+Now lets move on into **x** axis, here we want to do basically the same thing
+just with the different scale, we want to return **d.birth** divided **d.population**
+rather then **d.lifeExpectancy**
+
+    var xScale = d3.scaleLinear()
+                  .domain(d3,extent(birthData2011, d => d.births / d.poulation))
+                  .range([0, width]);
+
+Now lets make our first scatter-plot. First we set **width** and **height** of
+SVG, then we create an empty selection of **circle** and **join** our data to it
+after that will happen to the enter selection **append** the new **cirlce** and
+begin to style them. The coordinate of the **circle** base on our **scale** for
+now just to get something showing up on the page let set the **radius** width
+circle to be **5**
+
+
+    d3.select("svg")
+        .attr("width", width)
+        .attr("height", height)
+      .selectAll("cirlce")
+      .data(birthData2011)
+      .enter()
+      .append("circle")
+        .attr("cx", d => xScale(d.births / d.population))
+        .attr("cy", d => yScale(d.lifeExpectancy))
+        .attr("r", 5);
+
+Lets see the result:
+
+![Scatterplots-2.jpg](./Scatterplots/images/Scatterplots-2.jpg)
+
+One circle for each region. As you can tell there's fairly strong negative
+association between **lifeExpectancy** and **birth-per-capita** the higher this
+measurement of **birthRate** the lower the **lifeExpectancy**, so far so good.
+But there are couple of issues of this visualization, one is the circle touch
+the edge of SVG are getting cut-off because there center laying edge of the SVG.
+The most common way to fix this problem is to set some **padding** for the SVG
+and update our **scale** to account for this **padding**, now we have data-point
+**min** or **max** it wouldn't be map off the corner of the SVG, but will be
+off-set by our **padding** value.
+
+
+    var width = 500;
+    var heght = 500;
+    var padding = 20;
+
+    var yScale = d3.scaleLinear()
+                  .domain(d3.extent(birthData2011, d => d.lifeExpectancy))
+                  .range([height - padding, padding]);
+
+    var xScale = d3.scaleLinear()
+                  .domain(d3,extent(birthData2011, d => d.births / d.poulation))
+                  .range([padding, width - padding]);
+
+![Scatterplots-3.jpg](./Scatterplots/images/Scatterplots-3.jpg)
+
+Lets add some more functionality, right now our scatter plot help us visualize
+relationship between two variables **lifeExpectancy** and **birth-per-capita**,
+but we can visualize even more relationship by adjusting other aspect of the **cirlce**.
+Two other attributes we could adjust base on **data** or the **field** and the
+**radius**, lets use this attributes to make our visualization a little more
+interesting.
+
+For the **fill** we adjust the **color** base on the **country population density**.
+That's is **population** divided by it's **area**, lets color things so that **low**
+density are green and **high** area are black, how can we do this? **scaleLinear**
+its got that covered. It can do more map **numbers to numbers** it can also map
+**numbers to colors**.
+
+    var colorScale = d3.scaleLinear()
+                      .domain(d3.extent(birthData2011, d => d.population / d.area))
+                      .range(['lightgreen', 'black']);
+
+This scale works by converting colors to **RGB** value so the smallest density
+gets map to green and the largest gets map to black.
+
+![Scatterplots-4.jpg](./Scatterplots/images/Scatterplots-4.jpg)
+
+With this scale we can now adjust the **fill** base on the **population** density
+
+    d3.select("svg")
+        .attr("width", width)
+        .attr("height", height)
+      .selectAll("circle")
+      .data(birthData2011)
+      .enter()
+      .append("circle")
+        .attr("cx", d => xScale(d.births / d.population))
+        .attr("cy", d => yScale(d.lifeExpectancy))
+        .attr("fill", d => colorScale(d.population / d.area)) << add this
+        .attr("r", 5)
+
+Lastly lets use the **radius** to provide us with some more insight, I let the
+**radius** on each **circle** be based just of the number of **birth** not on
+the **birth-per-capita**, for this we need one more **scale**.
+
+    var radiusScale = d3.scaleLinear()
+                        .domain(d3.extent(birthData2011, d => d.births))
+                        .range([2, 40]);
+
+    d3.select("svg")
+        .attr("width", width)
+        .attr("height", height)
+      .selectAll("circle")
+      .data(birthData2011)
+      .enter()
+      .append("circle")
+        .attr("cx", d => xScale(d.births / d.population))
+        .attr("cy", d => yScale(d.lifeExpectancy))
+        .attr("fill", d => colorScale(d.population / d.area)) << add this
+        .attr("r", d => radiusScale(d.births)); << add this
+
+![Scatterplots-5.jpg](./Scatterplots/images/Scatterplots-5.jpg)
+
+Now our scatter plot help us to visualize relationship between four variables.
+**births**, **birth-per-capita**, **lifeExpectancy** and **populationDensity**
