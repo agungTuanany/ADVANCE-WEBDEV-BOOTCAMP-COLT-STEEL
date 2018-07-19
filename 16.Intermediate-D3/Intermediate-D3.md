@@ -829,12 +829,12 @@ bin.
     var height = 600;
     var barPadding = 1;
 
-#### Generating a Histogram.
+### Generating a Histogram | d3.histogram()
 
     d3.histogram()
 
 **d3.histogram()** is a function that return a function to us if we pass our
-data-set to the function that is return, D3 will create bin form our values. If
+data-set to the function that is return, D3 will create bin from our values. If
 we pass a histogram generator in array of numbers this process is automatic, but
 more commonly our data will be array of objects, and in this case we need to
 specify for D3 how it's should pulling data from each object in our array. For
@@ -930,7 +930,7 @@ labels lets quickly refactor what we have to use a **scale**.
 
 I create a scale before defining **histogram function**. I have the scale go from
 **0** to the largest value in the data set, and as we've seen before we have the
-**range** go from **0** to the SVG **width**.i
+**range** go from **0** to the SVG **width**.
 
     var xScale = d3.scaleLinear()
                   .domain([0, d3.max(yearData, d => d.births)])
@@ -938,7 +938,7 @@ I create a scale before defining **histogram function**. I have the scale go fro
 
 Once we have this scale we can avoid calculate the bar width directly, instead
 we can use the **x0** and **x1** properties for each bin to calculate the
-appropriate width. Specifically we can pas the **x0** into the scale to figure
+appropriate width. Specifically we can pass the **x0** into the scale to figure
 out where the **x** coordinate of each bars should be. As for the width its
 should be equal to the different between the scale value **x1** and scale value
 of **x0** minus the **barPadding**
@@ -950,6 +950,8 @@ be better if we could simply generate **bins** that have approximately same rang
 So the rectangle will automatically have similar width. There are few things we
 could do to get our bars width consistent. First we can specify the domain of
 our histogram using the **domain()** method.
+
+### Generating a Histogram | d3.histogram.domain([domain])
 
     histogram.domain([domain])
 
@@ -1002,7 +1004,150 @@ right on the first try.
         .attr("x", - height + 10)
         .style("alignment-baseline", "middle");
 
-
 ![Histogram-7.jpg](./Histograms/images/Histogram-7.jpg)
+
+### Generating a Histogram | d3.histogram.thresholds([value])
+
+    histogram.thresholds([value])
+
+The **thresholds()** method can take in different type of input, if you know
+exactly how you want to separate your data one options is to **pass in an array of
+values** that will be use to set end-points for each **bins**, that what we've
+done with **xScale.ticks()**, but you can also pass in any other values to create
+the **thresholds**.
+
+![Histogram-8.jpg](./Histograms/images/Histogram-8.jpg)
+
+Here's an example of how would look the **threshold** **90000** births.
+
+    var histogram = d3.histogram()
+                      .domain(xScale.domain())
+                      .thresholds([90000, 180000, 270000]) << change this
+                      .value( d => d.births);
+
+![Histogram-9.jpg](./Histograms/images/Histogram-9.jpg)
+
+If you don't know how you want to put in your data into bins but you know you
+want more a fewer bins then the default, you can also pass a single number into
+your **thresholds**. If you do this D3 will try to create uniforms resize bins
+base of the number you provide it. The number of bins it's makes will be roughly
+the same as the value you pass in, but there's no guarantee to get exactly that
+many.
+
+![Histogram-10.jpg](./Histograms/images/Histogram-10.jpg)
+
+With our current data-set for example if I pass in the number **5**, I get exactly
+five bins
+
+    var histogram = d3.histogram()
+                      .domain(xScale.domain())
+                      .thresholds(5)  << 5 bins
+                      .value( d => d.births);
+
+![Histogram-11.jpg](./Histograms/images/Histogram-11.jpg)
+
+But if I pass number **8**, I still get five bins. Here's the break down how
+many bins I get for different values pass in thru the **thresholds()**. Basically
+when you pass a number into **thresholds** D3 will do the best to accommodate you,
+but there's no guarantee you get the exact **number of thresholds** you've request it,
+If you need exact account use an array, not a single number.
+
+![Histogram-12.jpg](./Histograms/images/Histogram-12.jpg)
+
+### Scales Revisited | scale.ticks([count])
+
+    scale.ticks([count])
+
+The **ticks()** method on a scale behave a similar way, in that you can pass in
+a number to specify how many values from the scales domain you like to receive
+as intermediate values. D3 will do it the best to accommodate you, but you not
+guarantee to get the exact number of values you specified.
+
+![Histogram-13.jpg](./Histograms/images/Histogram-13.jpg)
+
+For example you can see when I call **.ticks()** in **xScale** and pass in **5**
+I get an array with **6** elements, but the same is true if I pass in **8**.
+
+![Histogram-14.jpg](./Histograms/images/Histogram-14.jpg)
+
+Okay lets move on to the next piece important functionality, being able to adjust
+the year. To start in HTML I create a tag for **range input** and give the **step**
+size of **1**.
+
+    <input type="range" step="1"/>
+
+In my JavaScript file, I first remove **barWidth** variable since I no longer needed.
+Next I calculate the maximum year using **d3.max()**.
+
+    var maxYear = d3.max(birthData, d => d.year);
+
+After that I then use the **minYear** and the **maxYear** from **birthData** to
+set a **min**, **max** and initial **Value** for our **range** input. Now lets
+add event-listener to input, on input events I want to grab the new **year** and
+update histogram accordingly. But since the number of bins I have make changes
+I need to use **general update pattern** to update the graph, first I filter my
+data-set by the new **year**, then I need to update the domain of my **xScale**
+base on this new data.Once I've updated my scale, I can update the histogram
+generator and in turn I can update the **bins**, once I've done that I can then
+update the **yScale**. Next I can grab the **update selection** and begin to update
+the graph.
+
+Lets review the **general update pattern**, first we can remove any
+elements in the **exit** selection. Next for any **enter** nodes we need to
+append a new **group** and to each new group we need to append a **rectangle**
+and the **text** elements, because I need to append twice I'm storing my
+**enter** selection in a variable called **g**, finally we need to **merge**
+enter selection with our update selection and update the rectangle and the text
+for each bars. The attributes that we updating will be the same as the one when
+we initial create the histogram, in fact there's fair amount code duplication
+here.
+
+    d3.select("input")
+        .property("min", minYear)
+        .property("max", maxYear)
+        .property("value", minYear)
+        .on("input", function() {
+          var year = +d3.event.target.value;
+          yearData = birtData.filter(d => d.year === year);
+          xScale.domain([0, d3.max(yearData, d => d.births)]);
+          histogram.domain(xScale.domain())
+                   .thresholds(xScale.ticks());
+         bins = histogram(yearData);
+         yScale.domain([0, d3.max(bins, d.length)]);
+         bars = d3.select("svg")
+                  .selectAll(".bar")
+                  .data(bins);
+
+          // GENERAL UPDATE PATTERN REVIEW
+        bars
+          .exit()
+          .remove()
+
+        var g = bars
+                  .enter()
+                  .append("g")
+                    .classed("bar", true);
+
+        g.append("rect");
+        g.append("text");
+
+        g.merge(bars)
+            .select("rect")
+              .attr("x", (d, i) => xScale(d.x0))
+              .attr("y", d => yScale(d.length))
+              .attr("height", d => height - yScale(d.length))
+              .attr("width", d => xScale(d.x1) - xScale(d.x0) - barPadding)
+              .attr("fill", "#9C27B0");
+
+        g.merge(bars)
+            .select("text")
+              .text(d => d.x0 + " - " + d.x1 + " (bar height: " + d.length +")")
+              .attr("transform", "rotate(-90)")
+              .attr("y", d => (xScale(d.x1) + xScale(d.x0)) / 2)
+              .attr("x", - height + 10)
+              .style("alignment-baseline", "middle");
+        });
+
+![Histogram-2.gif](./Histograms/images/Histogram-2.gif)
 
 
