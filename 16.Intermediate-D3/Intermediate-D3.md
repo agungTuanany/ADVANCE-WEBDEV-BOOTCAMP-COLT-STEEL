@@ -9,7 +9,7 @@
     5. Build histogram using D3 and SVG
     6. Build pie charts using D3 and SVG
 
-### Extrema and Scales
+## Extrema and Scales
 
 Last time we build **D3 Birth Chart** to visualize births around the world by
 month and by year. There are view issues came up when building this visualization
@@ -242,7 +242,7 @@ specific set data-point, and if we decide to add or to remove data from data-set
 later on we wont need to modify this code.
 
 
-### Scatter Plots
+## Scatter Plots
 
 Now we use what we learn about working with **min** **max** and **scale** with
 D3 to build first **Scatter Plots**. In keeping with the theme lets grab some
@@ -428,7 +428,7 @@ the **birth-per-capita**, for this we need one more **scale**.
 Now our scatter plot help us to visualize relationship between four variables.
 **births**, **birth-per-capita**, **lifeExpectancy** and **populationDensity**
 
-### Axes and Gridlines
+## Axes and Gridlines
 
 #### Axes
 
@@ -615,7 +615,7 @@ Its definitely a lot clearly now what a graph representing, there are further
 enhancement we could make, but we stop right here for now.
 
 
-### Scatterplot Exercise and solution
+## Scatterplot Exercise and solution
 
  Let me start with creating a variable for the **width**, **height** and **padding**.
 
@@ -798,3 +798,211 @@ and then add a title.
 Lets take a look the result:
 
 ![Scatterplots-Exercise-3.jpg](./Scatterplots-Exercise/images/Scatterplots-Exercise-3.jpg)
+
+## Histograms
+
+19, July 2018. Thu 13:55.
+
+Histogram is a helper function it's can be useful for specific type of graph.
+Histogram is a special type of **barChat** in which value in data-set place into
+**bin**, the high of rectangle in histogram represent the number of data-point
+in that bin. In this lecture we build the histogram to visualize **birth-data**
+by region for specific year.
+
+![Histogram-1.gif](./Histograms/images/Histogram-1.gif)
+
+In order to bucket our data into a bin we need a histogram, I could go through
+this data (birthData.js) create arrays of arrays base on year and base on
+births-range I'm curious about and then plug that data. Fortunately I don't have
+to do that work on my own, D3 comes with some build in method to help take some
+work off to my plate. This process will look very similar to the way we build
+bar-chart, but with one key different we will use **d3.histogram()** automatically
+bucket our value into groups for us.
+
+To get started lets setup **width** and **height** and **barPadding** we also
+need to determine the width of rectangles in our histogram and create **y**
+scale so that we can be sure that the bins all fit on SVG, but nor to do this we
+need to know how many bins we have? And how many pieces of data will be in each
+bin.
+
+    var width = 600;
+    var height = 600;
+    var barPadding = 1;
+
+#### Generating a Histogram.
+
+    d3.histogram()
+
+**d3.histogram()** is a function that return a function to us if we pass our
+data-set to the function that is return, D3 will create bin form our values. If
+we pass a histogram generator in array of numbers this process is automatic, but
+more commonly our data will be array of objects, and in this case we need to
+specify for D3 how it's should pulling data from each object in our array. For
+this we can use the **value()** method on **d3.histogram()**
+
+    histogram.value([value])
+
+Which accept a callback that specified how D3 should maintained value from each
+object. In our case I start by generating histogram and just for the first year
+in our data-set.
+
+![Histogram-1.jpg](./Histograms/images/Histogram-1.jpg)
+
+To do this I use **d3.min()** to grab the first year, then I filter out any data
+that doesn't come from this first year and store the filtered array in a variable
+called **yearData**.
+
+    var minYear = d3.min(birthData, d => d.year);
+    var yearData = birthData.filter(d => d.year === minYear);
+
+Now lets use the histogram generator, I create a variable called **histogram**
+and set equal to the return value of **d3.histogram()** I also chain a call to
+the **value()** method so that I can specify that I want histogram of births-counts.
+Finally I pass my data into this histogram generator and store the result in
+a variable called **bins**
+
+    var histogram = d3.histogram()
+                      .value( d => d.births);
+
+    var bins = histogram(yearData);
+
+Lets dig in into output of it. Has you can see **bins** is an array with two
+elements on it each of this elements is again an array, this time the array have
+a **birthData** in them. This array have to additional property **x0** and **x1**,
+for instance the first array inside of bins consist of three data point, each one
+have a birth total **161** the value of **x0** and **100000** the value of **x1**.
+With the data place into bins we know now how many rectangle we need to draw and
+what our **yScale** should be.
+
+![Histogram-2.jpg](./Histograms/images/Histogram-2.jpg)
+
+So lets calculate the width, we can also generate a **yScale** for the **births-counts**
+using **scaleLinear()**, our **domain** will go from **0** to the length of largest
+bin, and the **range** will go from SVG height to **0**.
+
+    var barWidth = width / bins.length - barPadding;
+
+    var yScale = d3.scaleLinear()
+                  .domain([0, d3.max(bins, d => d.length)])
+                  .range([height, 0]);
+
+Next lets select the SVG set **width** and **height** and then join our data to
+element with the class of **bar**, for each enter node will now append **group**
+element, I'm doing this because I want two element in the SVG for each data-point,
+a **rectangle** and **text** elements with the description of the data.
+
+    var bars = d3.select("svg")
+                  .attr("width", width)
+                  .attr("height", height)
+                .selectAll(".bar")
+                .data(bins)
+                .enter()
+                .append("g")
+                  .classed("bar", true);
+
+Inside of each group lets now append our histogram rectangles. This pattern should
+very similar with what we did when we first learn about **bar-chart**. I set the
+**x** attributes so that each rectangles is **offset** by the bar width plus the
+bar padding. For the **y** attributes we use our **scale**, similarly the **height**
+will just be equal to the SVG height minus the scaled value. Finally the **width**
+equal the **barWidth**, well I'm add it I also adjust the **fill**.
+
+    bars
+      .append("rect")
+        .attr("x", (id, i) => (barWidth + barPadding) * i)
+        .attr("y", d => yScale(d.length))
+        .attr("height", d => height - yScale(d.length))
+        .attr("width", barWidth)
+        .attr("fill", "#9C27B0");
+
+As I mention earlier there is a Ton of data from 1967, but already we can see the
+most region that reported the data have relatively small number of births.
+
+![Histogram-3.jpg](./Histograms/images/Histogram-3.jpg)
+
+Before we move on, it worth pointing out that you very often see the histogram
+created with help of **xScale** as well as **yScale**, weather you want to use
+**xScale** totally up to you, but its very common and allows us to do a bit buzz
+arithmetic involving our rectangles. It also allow us to fix a small issues to
+the current approach. Right now both of our bars have same width even though the
+second one spend a larger range of values then the first, so before adding text
+labels lets quickly refactor what we have to use a **scale**.
+
+I create a scale before defining **histogram function**. I have the scale go from
+**0** to the largest value in the data set, and as we've seen before we have the
+**range** go from **0** to the SVG **width**.i
+
+    var xScale = d3.scaleLinear()
+                  .domain([0, d3.max(yearData, d => d.births)])
+                  .range([0, width])
+
+Once we have this scale we can avoid calculate the bar width directly, instead
+we can use the **x0** and **x1** properties for each bin to calculate the
+appropriate width. Specifically we can pas the **x0** into the scale to figure
+out where the **x** coordinate of each bars should be. As for the width its
+should be equal to the different between the scale value **x1** and scale value
+of **x0** minus the **barPadding**
+
+![Histogram-4.jpg](./Histograms/images/Histogram-4.jpg)
+
+However the **barWidth** now more accurate they also look a little weird, it will
+be better if we could simply generate **bins** that have approximately same range,
+So the rectangle will automatically have similar width. There are few things we
+could do to get our bars width consistent. First we can specify the domain of
+our histogram using the **domain()** method.
+
+    histogram.domain([domain])
+
+This method is call in histogram generating method. Its allows you to specifies
+the domain of values that you like to generator to use when it's create **bins**.
+If you don't specifies domain the generator will default using the extent of
+data-set.
+
+![Histogram-5.jpg](./Histograms/images/Histogram-5.jpg)
+
+Lets modified the domain so that uses the domain of our scale, this will helping
+sure the first bin in the correct size. To avoid duplication we just call **.domain**
+in our scale. This will get the domain we use when we originally created the scale.
+We can overwrite the default **thresholds** or **ranges** in this bin using the
+**tresholds()** method on the histogram generator method, we talk more about
+this method in the next lecture. For now all you need to know is that you often
+to see the **tick-marks** of the **xScale** use to overwrite the default **thresholds**,
+we can get this **ticks** by calling **xScale.ticks()**, which just return an array
+evenly a space intermediate values to us. Lastly you often see **rangeRound()** use
+on the **xScale** instead of **range**, this method is very similar to the
+**range()** method we've seen before, the only different it's make sure the width
+all rounded to the nearest tall numbers.
+
+    var xScale = d3.scaleLinear()
+                  .domain([0, d3.max(yearData, d => d.births)])
+                  .rangeRound([0, width]); << added this
+
+    var histogram = d3.histogram()
+                      .domain(xScale.domain()) << added this
+                      .thresholds(xScale.ticks()) << added this
+                      .value( d => d.births);
+
+![Histogram-6.jpg](./Histograms/images/Histogram-6.jpg)
+
+We can see there more rectangles then before. We talk more about controlling the
+number of rectangle with the **thresholds()** method in the next lecture.For now
+lets finish things up by adding the **text-labels** for each bar group. In our
+labels lets include the **end-point** of the bin, lets also include **account**
+of the number of **region** inside of the bin, this windup with a lot of text,
+so I rotate the text **90** degrees and dealigned (dibagikan) up in the middle
+of each bar and at the bottom of SVG, In practice adding the position right
+probably takes some guess and check so don't worry if you don't get this exactly
+right on the first try.
+
+    bars
+      .append("text")
+        .text(d => d.x0 + " - " + d.x1 + " (bar height: " + d.length +")")
+        .attr("transform", "rotate(-90)")
+        .attr("y", d => (xScale(d.x1) + xScale(d.x0)) / 2)
+        .attr("x", - height + 10)
+        .style("alignment-baseline", "middle");
+
+
+![Histogram-7.jpg](./Histograms/images/Histogram-7.jpg)
+
+
