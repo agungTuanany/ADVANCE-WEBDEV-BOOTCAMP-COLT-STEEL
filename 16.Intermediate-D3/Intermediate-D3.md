@@ -1150,4 +1150,322 @@ here.
 
 ![Histogram-2.gif](./Histograms/images/Histogram-2.gif)
 
+## Histogram Exercise and Solution
 
+We set variable for SVG **width** and **height** as well some value for the SVG
+**padding** and **barPadding**, Also similar to scatter-plot lecture I don't
+wanna consider any data in my **regionData** array with the value **medianAge**
+is null, so I filter my original data-set, so I only keep data on region that
+only have record **medianAge**.
+
+    var width = 800;
+    var height = 600;
+    var padding = 50;
+    var barPadding = 1;
+    var ageData = regionData.filter(d => d.medianAge !== null);
+
+Moving on lets create some **scale**, I start with the **xScale** for my **domain**
+I want the extreme values for **medianAge**, so once again I use **d3.extent**
+then I use **rangeRound** end off the **padding** to the **width minus the padding**.
+
+    var xScale = d3.scaleLinear()
+                  .domain(d3.extent(ageData, d => d.medianAge))
+                  .rangeRound([padding, width - padding]);
+
+I can't set the **yScale** without knowing how high my bins will be, so first
+I need to use **histogram generator** to create my bins, just like the example
+we walk thru earlier in the section I set my **domain** on histogram equal to
+the domain of my scale, and set **tresholds** base on the default **ticks** for
+my scale, I also use the **value()** method on the generator to specify that
+I wanna histogram of **medianAge** values.
+
+    var histogram = d3.histogram()
+                      .domain(xScale.domain())
+                      .thresholds(xScale.ticks())
+                      .value(d => d.medianAge);
+
+Next I can define **bins** variables and set equal to the value I get when
+I pass my **ageData** to the histogram generator.
+
+    var bins = histogram(ageData);
+
+Lets open the console and take look this variable.
+
+![Histogram-1.jpg](./Histogram-Exercise-and-Solution/images/Histogram-1.jpg)
+
+Great, it's look that histogram generator work as expected. Now that I know how
+many data-point on each bins I can create my **yScale**. For the **domain** I go
+from  **0** to the **largest bins height**, and for the **range** I go from the
+**height minus the padding** to the **padding**.
+
+    var yScale = d3.scaleLinear()
+                  .domain([0, d3.max(bins, d => d.length)])
+                  .range([height - padding, padding]);
+
+Lest quickly add **rectangles**, no secret here. I just use the same pattern
+that we use many time before. First let me select the SVG set **width** and **height**
+and store the selection in a variable.
+
+    var svg = d3.select("svg")
+                .attr("width", width)
+                .attr("height", height);
+
+Then I **selectAll** variables inside the SVG join with my **bin** data,
+**enter**, **append** the rectangle and **style** them. My **x** attributes is
+determine by **0x** property by each bins or in convention called **x0**. The
+**y** attributes is determine by the **length of the bins**. The **height** and
+the **width** bit more complicated, but this the same expression we've seen before.
+Lastly I make all this rectangles **blue** with **fill** attributes.
+
+    svg.selectAll("rect")
+      .data(bins)
+      .enter()
+      .append("rect")
+          .attr("x", d => xScale(d.x0))
+          .attr("y", d => yScale(d.length))
+          .attr("height", d => height - padding - yScale(d.length))
+          .attr("width", d => xScale(d.x1) - xScale(d.x0) - barPadding)
+          .attr("fill", "blue");
+
+I also need to set my **axes** and **labels** we've done several time all ready.
+So I just paste in the code.
+
+    svg.append("g")
+        .attr("transform", "translate(0," + (height - padding) + ")")
+        .classed("x-axis", true); << added this
+
+    svg.append("g")
+        .attr("transform", "translate(" + padding + ", 0)")
+        .classed("y-axis", true); << added this
+
+    svg.append("text")
+        .attr("x", width / 2)
+        .attr("y", height - 10)
+        .style("text-anchor", "middle")
+        .text("Median Age");
+
+    svg.append("text")
+        .attr("transform", "rotate(-90)")
+        .attr("x", - height / 2)
+        .attr("y", 15)
+        .style("text-anchor", "middle")
+        .text("Frequency");
+
+The only things I do slightly differently I added **class x-axix** to my x-axis,
+and **class y-axis** to my y-axis. This will make my **axes** is easier to
+select D3 when I need to update them as part of the bonus (this is the hint).
+Now lets refresh the page, there is our histogram!!.
+
+![Histogram-2.jpg](./Histogram-Exercise-and-Solution/images/Histogram-2.jpg)
+
+Next lest tackle the bonus, I like to add range input to the page so then I can
+specify how many bins I want for the histogram. Firs I update my HTML to include
+a **range input**, the fewest number of bins I can have is **1** and the step
+size should also be **1**, I also set the **max** to **50**, but I set the value
+property in JavaScript.
+
+    <input type="range" min="1" step="1" max="50" />
+
+Well I'm here I also add **p** tag with the class **bin-count**, this is how to
+display to the user the current number of bins.
+
+    <p class="bin-count"></p>
+
+I also style new element in stylesheet.
+
+    svg, input {
+      margin: 0 auto;
+      display: block;
+    }
+
+    bin-count {
+      text-align: center
+    }
+
+Lets back to JavaScript and select the **input** element. The current value for
+the input just be the number of the current bin that histogram generator create it.
+Now that I have setup my input lets add **eventListener** for input event.
+
+Inside of the callback I first store the input value call **bin-count**, then I update
+the histogram generator, I put bin count into **ticks** method to change the array
+that's been use to set the **thresholds**, this mean I need to update **bins**
+variable and the **yScale domain** too since my bin has are changing, after that
+I select the **y** axis and pass it into my updated scale.
+
+Next lets Update the rectangles here again we see the general update pattern
+come in to play, first I store the update selection in a variable then I remove
+anything in **exit** selection, after that I append the rectangle for every
+**enter** node for every on the **enter** selection and I **merger** in **update**
+selection to set style for every rectangle on the page, then I update the **text**
+on the **p** tag, then I update the **text** in the **p** tag.
+
+    d3.select("input")
+        .property("value", bins.length)
+        .on("input", function() {
+          var binCount = +d3.event.target.value;
+          histogram.thresholds(xScale.ticks(binCount));
+          bins = histogram(ageData);
+          yScale.domain([0, d3.max(bins, d => d.length)]);
+
+          d3.select("y-axis")
+              .call(d3.axisLeft(yScale))
+
+          var rect = svg
+                      .selectAll("rect")
+                      .data(bins);
+
+          rect
+            .exit()
+            .remove();
+
+          rect
+            .enter()
+              .append("rect")
+            .merge(rect)
+              .attr("x", d => xScale(d.x0))
+              .attr("y", d => yScale(d.length))
+              .attr("height", d => height - padding - yScale(d.length))
+              .attr("width", d => xScale(d.x1) - xScale(d.x0) - barPadding)
+              .attr("fill", "blue");
+
+          d3.select("bin-count")
+              .text("Number of bins: " + bins.length );
+          });
+
+![Histogram-1.gif](./Histogram-Exercise-and-Solution/images/Histogram-1.gif)
+
+This look legit, that would be nice that the **x-axis** adjust it with the
+**barWidth**, to make this happen I can select the **x-axis** insie the **callBack**
+then call new **axisBottom** where I use the **ticks()** method the axis pass in
+**binCount**.
+
+      d3.select(".x-axis")
+        .call(d3.axisBottom(xScale)
+                .ticks(binCount));
+
+like look the **ticks()** method on the scale this will set the **ticks** on the
+axis base on the count I've pass in, now the **x-axis** is updating to.
+
+![Histogram-2.gif](./Histogram-Exercise-and-Solution/images/Histogram-2.gif)
+
+Note that the **x-axis** label get little cramp when the number bins is large,
+one way to fix that to select all **text** element insde the **x-axis** and
+update their styles, for example to make them bit more legible I can nudge them
+a little in the **x** and **y** direction, **rotate** them and update their
+**text-anchor** property. If we save and refresh we see thing now look little
+better when there are large number of **bins**.
+
+      d3.select(".x-axis")
+        .call(d3.axisBottom(xScale)
+                .ticks(binCount));
+        .selectAll("text")
+          .attr("y", -3)
+          .attr("x", 10)
+          .attr("transform", "rotate(90)")
+          .style("text-anchor", "start");
+
+One last thing the app look fine, but the code can use little refactoring, I get
+fair mount duplication for the **syling of rectangles** and calling the **axes**,
+if this duplication bothers you one thing we can do is refactor the common task
+in to **one function**.
+
+For example I could write a function called **updateRects** which is basically
+responsible for updating the graph. This function will take is argument the
+number of rectangles you want to draw. Inside of this function I create my
+**xScale**, my **histogram-generaor**, my **bins**, and my **yScale**, then
+I update the **x** and **y** axis use the general update pattern to update the
+**rectangles** and update the **text** in a **p** tag.
+
+    function updateRects(val) {
+
+      var xScale = d3.scaleLinear()
+                     .domain(d3.extent(ageData, d => d.medianAge))
+                     .rangeRound([padding, width - padding]);
+
+      var histogram = d3.histogram()
+                        .domain(xScale.domain())
+                        .thresholds(xScale.ticks())
+                        .value(d => d.medianAge);
+
+      var bins = histogram(ageData);
+
+      var yScale = d3.scaleLinear()
+                    .domain([0, d3.max(bins, d => d.length)])
+                    .range([height - padding, padding]);
+
+      d3.select("y-axis")
+          .call(d3.axisLeft(yScale));
+
+      d3.select(".x-axis")
+        .call(d3.axisBottom(xScale)
+                .ticks(binCount))
+        .selectAll("text")
+          .attr("y", -3)
+          .attr("x", 10)
+          .attr("transform", "rotate(90)")
+          .style("text-anchor", "start");
+
+      var rect = svg
+                  .selectAll("rect")
+                  .data(bins);
+
+      rect
+        .exit()
+        .remove();
+
+      rect
+        .enter()
+          .append("rect")
+        .merge(rect)
+          .attr("x", d => xScale(d.x0))
+          .attr("y", d => yScale(d.length))
+          .attr("height", d => height - padding - yScale(d.length))
+          .attr("width", d => xScale(d.x1) - xScale(d.x0) - barPadding)
+          .attr("fill", "blue");
+
+      d3.select(".bin-count")
+          .text("Number of bins: " + bins.length);
+    }
+
+
+with this helper the callback to my own method is much simpler. All I do is call
+this helper and pass in the event target value as a number.
+
+    d3.select("input")
+        .property("value", bins.length)
+      .on("input", function() {
+        updateRects(+d3.event.target.value);
+      });
+
+I can alos use this function to initaly setup the graph, the first time
+I generate the histogram I get **16** bins so let me store this number in
+a variable.
+
+    var initalBinCount = 16;
+
+I can use this variable when I setup my input and again to call my helper
+function, this save me from having to initial all my **x** and **y** axis, or
+declare my **scale**, **histogram generator**,or **bins** variable outside of
+this helper.
+
+    d3.select("input")
+        .property("value", initalBinCount)
+      .on("input", function() {
+        updateRects(+d3.event.target.value);
+      });
+
+
+    svg.append("g")
+        .attr("transform", "translate(0," + (height - padding) + ")")
+        .classed("x-axis", true)
+        .call(d3.axisBottom(xScale)); << delete this line
+
+    svg.append("g")
+        .attr("transform", "translate(" + padding + ", 0)")
+        .classed("y-axis", true)
+        .call(d3.axisLeft(yScale)); << delete this line
+
+        updateRect(initalBinCount);
+
+When I save and refersh everything work as before, but this code has much less
+duplication.
