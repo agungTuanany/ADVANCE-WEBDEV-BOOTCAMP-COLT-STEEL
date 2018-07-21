@@ -1650,3 +1650,151 @@ object in **arcs array** and it will return a valid path command. Now if we
 refresh the page we can see our graph.
 
 ![Pie-charts-10.jpg](./Pie-Charts/images/Pie-charts-10.jpg)
+
+Now, we learn to get **range** and **footworking**, so we can see our data changes
+over time, I also like to talk a few enhancement we ca make to our **pie-chart**
+with D3.
+
+First lets tackle the **range input**. To start I calculate the **maximum year**
+using D3.
+
+    var maxYear = d3.max(birthData, d => d,year);
+
+This allow me to set a **min**, **max** and **value** property on the input with
+JavaScript. Next I like to add an **eventListener** for **input** event on the
+**rangeInput**. Here's I would to do thing bit differently.
+
+    d3.select("input")
+        .property("min", minYear)
+        .property("max", maxYear)
+        .proprety("value", "minYear")
+
+As you may recall from histogram lecture I ended up with fair amount duplication
+between the code that **setup** the graph and the code that **updated** the graph
+inside my **eventHandler**. In the solution lecture "Histogram Exercise-and-Solution"
+we write one way to avoid this duplication was to write a **helper function** that
+responsible for **rendering** the graph using the **general update pattern**, So
+that I would like to do here.
+
+I write a function called **makeGraph** which takes a **year** as it argument.
+Inside in this function I move the code that filter my data-set that only value
+matching the year variable are kept. I also move my code that use **d3.pie** and
+**d3.arc** into this function.
+
+In the last lecture we only need to use **enter** selection to get our graph to
+show up, but in order to make our code more flexible we need to use the **general
+update pattern** as we've seen before I first need to grab the update selection
+and store it into a variable.
+
+Then I hub into **exit** selection and remove any unnecessary **arcs**. Next
+I move into **enter** selection **append** the **path** element for each new
+piece of data and give a **new arc**  a class of **arc**, finally I merge the
+**enter** and **update** selection and set each arc **fill**, **stroke** and
+**d** attributes, just like before.
+
+    function makeGraph(year) {
+      var yearData = birthData.filter(d => d.year === year);
+
+      var arcs = d3.pie()
+                  .value(d => d.births)
+                  (yearData);
+
+      var path = d3.arc()
+                  .outerRadius(width / 2 - 10)
+                  .innerRadius(width / 4);
+
+      var update = d3.select(".chart")
+                      .selectAll(".arc")
+                      .data(arcs);
+
+      update
+        .exit()
+        .remove();
+
+      update
+        .enter()
+        .append("path")
+          .classed("arc",true)
+        .merge(update)
+          .attr("fill", d => colorScale(d.data.continent))
+          .attr("stroke", "black")
+          .attr("d", path);
+    }
+
+Now that I have this function, I can use in two places, first I use it when
+script load and pass in **minYear**.
+
+    makeGraph(minYear);
+
+Second I can use this function in **eventHendler** and pass in the event target
+value converted into a number.
+
+    d3.select("input")
+        .property("min", minYear)
+        .property("max", maxYear)
+        .proprety("value", "minYear")
+        .on("input", function() {
+          makeGraph(+d3.event.target.value);
+        });
+
+![Pie-charts-3.gif](./Pie-Charts/images/Pie-charts-3.gif)
+
+Great this **range input**  seems to be working, there are a couple small enhancement
+can make to our graph as well. If you want to set padding between **wedges**,you
+can set it either in **d3.pie()** or **d3.arc**. On **d3.arc** you can **round**
+your **corner** between wedges, which can be nice enhancement if you using padding
+
+![Pie-charts-11.jpg](./Pie-Charts/images/Pie-charts-11.jpg)
+
+take a look this two line change our graph.
+
+    var path = d3.arc()
+                .outerRadius(width / 2 - 10)
+                .innerRadius(width / 4)
+                .padAngle(0.02) << add this line
+                .cornerRadius(20); << add this line
+
+![Pie-charts-4.gif](./Pie-Charts/images/Pie-charts-4.gif)
+
+Also it's important to note that you can change the default sort order for your
+arcs, we've learn that the **pie generator** automatically sort arcs value,
+largest arcs come first, but if you want sort by other value, you can use the
+**sort()** method on the generator and pass in your own **comparator**.
+
+### Sorting Arcs | pie.sort()
+
+    pie.sort([comparator])
+
+The sort method will run over pairs data points call them **a** and **b**. If
+**a** should come **before** **b** chart the comparator should return the **negative**
+number, if **a** should come **after** **b** the comparator should return the
+**positive** number, but if you in different between **a** and **b** the
+function should return **0**.
+
+![Pie-charts-12.jpg](./Pie-Charts/images/Pie-charts-12.jpg)
+
+Here's the quick example, suppose you want to visualize your data group by
+**continent** and then by **birth count**, we could use the **sort** method and
+pass an comparator that check the property on **a** and **b**, if **a**
+continent come before **b** alphabetically this comparator should return **-1**,
+if **a** continent come after the comparator should return **+1**, otherwise the
+two data point have the same continent and we can simply return the different in
+**birth count**.
+
+
+    var arcs = d3.pie()
+                .value(d => d.births)
+                .sort(function(a, b) {
+                  if (a.continent < b.continent)
+                    return -1;
+                  else if (a.continent > b.continent)
+                    return 1;
+                  else return a.births - b.births;
+                })
+                (yearData);
+
+As you can see now all the arcs of the same colors come together.
+
+![Pie-charts-5.gif](./Pie-Charts/images/Pie-charts-5.gif)
+
+
