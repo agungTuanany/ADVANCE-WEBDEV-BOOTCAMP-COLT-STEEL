@@ -1335,7 +1335,7 @@ on the **p** tag, then I update the **text** in the **p** tag.
 ![Histogram-1.gif](./Histogram-Exercise-and-Solution/images/Histogram-1.gif)
 
 This look legit, that would be nice that the **x-axis** adjust it with the
-**barWidth**, to make this happen I can select the **x-axis** insie the **callBack**
+**barWidth**, to make this happen I can select the **x-axis** inside the **callBack**
 then call new **axisBottom** where I use the **ticks()** method the axis pass in
 **binCount**.
 
@@ -1349,7 +1349,7 @@ axis base on the count I've pass in, now the **x-axis** is updating to.
 ![Histogram-2.gif](./Histogram-Exercise-and-Solution/images/Histogram-2.gif)
 
 Note that the **x-axis** label get little cramp when the number bins is large,
-one way to fix that to select all **text** element insde the **x-axis** and
+one way to fix that to select all **text** element inside the **x-axis** and
 update their styles, for example to make them bit more legible I can nudge them
 a little in the **x** and **y** direction, **rotate** them and update their
 **text-anchor** property. If we save and refresh we see thing now look little
@@ -1428,7 +1428,7 @@ I update the **x** and **y** axis use the general update pattern to update the
     }
 
 
-with this helper the callback to my own method is much simpler. All I do is call
+With this helper the callback to my own method is much simpler. All I do is call
 this helper and pass in the event target value as a number.
 
     d3.select("input")
@@ -1437,7 +1437,7 @@ this helper and pass in the event target value as a number.
         updateRects(+d3.event.target.value);
       });
 
-I can alos use this function to initaly setup the graph, the first time
+I can also use this function to initially setup the graph, the first time
 I generate the histogram I get **16** bins so let me store this number in
 a variable.
 
@@ -1454,7 +1454,6 @@ this helper.
         updateRects(+d3.event.target.value);
       });
 
-
     svg.append("g")
         .attr("transform", "translate(0," + (height - padding) + ")")
         .classed("x-axis", true)
@@ -1467,5 +1466,187 @@ this helper.
 
         updateRect(initalBinCount);
 
-When I save and refersh everything work as before, but this code has much less
+When I save and refresh everything work as before, but this code has much less
 duplication.
+
+## Pie Charts
+
+Pie charts is a valuable way to visualize data when you care about a part in
+relation to a whole. You may recall that you can draw any circular **arcs** with
+the SVG **path** element, which is what we need to draw a **pie-chart**, however
+while the **path** element is a powerful drawing tool it's also not the most
+intuitive, fortunately just D3 has **histogram** method it's also have a **pie**
+method to help transform data for visualization as a **pie chart**.
+
+![Pie-charts-1.jpg](./Pie-Charts/images/Pie-charts-1.jpg)
+
+In **birthData.js** I have an array of object that have **continent** data,
+I like use this data to display a pie-charts for birth data by year. I all ready
+put some code on my **app.js**, much of it's should look similar to what we have
+for the histogram visualization.
+
+I'm binding the **first year** in data set, fix-in bound on my SVG and filtering
+out any data that isn't form the first year on my set.
+
+    var minYear = d3.min(birthData, d => d.year);
+    var width = 600;
+    var height = 600;
+    var yearData = birthData.filter(d => d.year === minYear);
+
+Let me start by iterating through my data and generating a list of all **continent**
+code. I could do this using the **reduce** or even by **inspection** since there
+aren't many continents, but for now I just write q quick for-loop. Inside the
+loop I use **indexOf** to check weather I've seen the continent or not, if not
+I push it into my array.
+
+    var continents = [];
+    for (var i = 0; i < birthData[i].length; i++ {
+      var continent = birthData[i].continent;
+      if (continents.indexOf(continent) === -1) {
+        continents.push(continent);
+      }
+    })
+
+Now I also like to associate each continent a color. I could use an object but
+this time I use **d3.scale** to get job done. The scale I'll use this time is
+called **ordinal scale**.
+
+### Scales Revisited | d3.scaleOrdinal()
+
+Which basically map a discrete set of point on a **domain** to discrete set of
+point in a **range**.
+
+![Pie-charts-2.jpg](./Pie-Charts/images/Pie-charts-2.jpg)
+
+In this case my **domain** is **continent arrays**, for the range I need array
+of colors, I could pick colors on my own, but D3 also comes with few different
+colors schemes that their design work with **ordinal scale**. You can see a list
+of schemes on D3 documentation for scales. For now since I know there aren't no
+many continents I use **d3.schemeCategory10** which give me a **10** colors. Since
+there fewer maintain continent the extra colors simply wont get use by the scale.
+
+    var colorScale = d3.scaleOrdinal()
+                      .domain(continents)
+                      .range(d3.schemeCategory10);
+
+![Pie-charts-3.jpg](./Pie-Charts/images/Pie-charts-3.jpg)
+
+Before we dig in to the D3 helper method **pie-chart** I like to do one more
+setup. Typically **pie-chart** is build inside **group** elements which is transform
+wherever you want the **center** of pie-chart to be. If you don't do this the
+center of pie-chart will be the origin of the SVG which mean you only be able to
+see **1/4** (one-quarter) of it.
+
+![Pie-charts-1.gif](./Pie-Charts/images/Pie-charts-1.gif)
+
+So first I select the SVG set **width** and **height** then **append** the **group**
+**transform** it to the center of the SVG and give a class of **chart** so that
+easily I can selected later.
+
+    d3.select("svg")
+        .attr("width", width)
+        .attr("height", height)
+      .append("g")
+        .attr("transform", "translate(" + width / 2 + ", " + height / 2 +")")
+        .classed("chart", true);
+
+Now we ready to learn a new D3 method, like histogram method we saw in previous
+lecture there are a couple helper method we can use to stream line the process of
+creating our **pie-chart**. The main difficulty lies on fact that as we've seen
+**path** element on the SVG are complicated. So we need a way to translate between
+our original set of data and the string that we could pass into the **attributes**
+of **path** elements. D3 facilitate this transition with the help **2** methods.
+
+![Pie-charts-4.jpg](./Pie-Charts/images/Pie-charts-4.jpg)
+
+### Pie Charts Helpers | d3.pie()
+
+The first is:
+
+    d3.Pie()
+
+**d3.pie** is similar to **d3.histogram**, in that return a function which takes
+a set of data and transform that data into a format that more useful for drawing
+a graph. Also like **d3.histogram**, **d3.pie** has a value method that allow
+you to specify the value you interested in visualizing.
+
+![Pie-charts-5.jpg](./Pie-Charts/images/Pie-charts-5.jpg)
+
+Like before we want to specify the births property and pass in the data from
+**1967**.
+
+    var arcs = d3.pie()
+                .value(d => d.births)
+                (yearData);
+
+To understand what D3 is doing let take a look the value of **arcs**, as you can
+see I got an array of 4 objects, one for each **arch** in a **pie-chart**, each
+object has have information about the arcs, **data** point is back to the data-object
+from our original birth-data array that is bound to this particular **arc**.
+**endAngle** is the angle where the arc should stop, **index** is keeps tracks
+the short order of the arcs. The default **ordering** is by **value**, **the
+larger the value the lower the index**. We talk about **padAngle** in the next
+lecture. **startAngle** is the angle where the arcs should start. **value** is
+value being graph. In this case the value is coming from fact that **Puerto Rico**
+reported that many birth from in **1967**.
+
+![Pie-charts-6.jpg](./Pie-Charts/images/Pie-charts-6.jpg)
+
+Note that the angle are always measure the radians which go from **0** to
+**2 * pie**, where around **6.28**. **2 pi radians** is equal to **360** degree
+both represent full rotation.
+
+![Pie-charts-2.gif](./Pie-Charts/images/Pie-charts-2.gif)
+
+In this example, we see the first two **arc** should take up the most area, the
+last arc may not be visible since the **stratAngle** and **endAngle** are so
+close together. As you can see D3 takes care the work of translating our data
+into **angle** values that we can **use** to draw a chart, but we not quit there
+yet. How do we get from this object to a string that we can pass in as D3 attributes
+to a **path** elements? Once again D3 has got our backs, it's also with
+**arc()** method.
+
+### Pie Chart Helper | d3.arc()
+
+    d3.arc()
+
+**d3.arc()** translate the JavaSCript object into valid SVG **path** commands.
+
+![Pie-charts-7.jpg](./Pie-Charts/images/Pie-charts-7.jpg)
+
+Here is quick example, if I pass in an object with **innerRadius** of **0** and
+**outerRadius** of **100**, a **startAngle** of **0** and **endAngle** of pi-radians
+here's the string that **d3.arc()** will return to me.
+
+![Pie-charts-8.jpg](./Pie-Charts/images/Pie-charts-8.jpg)
+
+As you can see this is the valid string which I could pass in as **d** attributes
+to some path element.
+
+We can also use special method on **d3.arc** to set default for some of this
+object property. This can be helpful if for example when you know the
+**inner-outer radius** that would be the same for every **arc**.
+
+![Pie-charts-9.jpg](./Pie-Charts/images/Pie-charts-9.jpg)
+
+For instance here you can set to fix **inner-outer radius** for **d3.orc** base
+on the width of SVG. Note that if you set the **innerRadius** to **0** you get
+a circle and if set it into some **positive** value, you get a null less or
+doughnut shape, so I get **positive** on radius.
+
+    var path = d3.arc()
+                .outerRadius(width / 2 - 10)
+                .innerRadius(width / 4);
+
+Now we need to use D3 data method to bind our **arc** to the SVG element. I've
+already created the group of class **.chart** so first I select this group and
+then I create an empty selection and by selecting all elements with the class of
+an **.arc**. After joining with my **arcs** I hub in into the **enter** selection
+and for each arc I **append** the **path** with the class of **arc**, I set the
+**fill** base on the **continent** give each arc a **strok** color of black and
+lastly I set **d** attributes on the **path** by simply pass in my path function.
+Remember that since **path** is a function it would be invoke **once** for each
+object in **arcs array** and it will return a valid path command. Now if we
+refresh the page we can see our graph.
+
+![Pie-charts-10.jpg](./Pie-Charts/images/Pie-charts-10.jpg)
