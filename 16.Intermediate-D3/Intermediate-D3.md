@@ -1797,4 +1797,245 @@ As you can see now all the arcs of the same colors come together.
 
 ![Pie-charts-5.gif](./Pie-Charts/images/Pie-charts-5.gif)
 
+## Pie Charts Exercise and Solution
 
+In last lecture, you remember that I recommended build a chart in **3 stages**.
+**First** build the chart for single year, **Second** get the range input
+working so you can change the year, **third** add the inner chart to choose data
+by quarter rather then by month. Lets walk through the solution in this stages.
+
+### First Stage
+
+First I build the pie chart for data-set, like early lecture on **pie charts**
+I begin by setting SVG **width**, **height** and by calculating the minimum year
+on my data-set.
+
+    var width = 600;
+    var height = 600;
+    var minYear = d3.min(birthData, d => d.year);
+
+Eventually I like to color code each one on my arcs for prepare
+this I build an **ordinal scale** to convert month to color, to do this let me
+first create in array of months. This array will be important later on because
+the month serve a range in chronological order.
+
+    var orderedMonths = [ "January", "February", "March", "April", "May", "June",
+      "July", "August", "September", "October", "November", "December" ];
+
+Next I create an array of color, this color is base on **d3.schemeCatagory20**
+but include color that are not part that scheme.
+
+    var colors = [
+      "#aec7e8", "#a7cfc9", "#9fd7a9", "#98df8a", "#bac78e", "#ddb092",
+      "#ff9896", "#ffa48c", "#ffaf82", "#ffbb78", "#e4bf9d", "#c9c3c3"
+    ];
+
+Once I have this two arrays I can create a **color scale** using **scaleOrdinal**
+method. My months will be the **domain**, and my color will be the **range**.
+
+Lets happen to the console test the scale out.
+
+    var colorScale = d3.scaleOrdinal()
+               .domain(orderedMonths)
+               .range(colors);
+
+As you can see the first month is map to the first color, the second month map
+to the second color and so on
+
+![Pie-charts-exercise-1.jpg](./Pie-Charts-Exercise-and-Solution/images/Pie-charts-exercise-1.jpg)
+
+Next lets take care some basic setup for the **chart**, first I select the SVG
+set it **width** and **height** and store it in variable.
+
+    var svg = d3.select("svg")
+                  .attr("width", width)
+                  .attr("height", height);
+
+Then I append the group into SVG that will be the bases for my chart. Just like
+we've seen before I center this group and give it a class so that I can easily
+target it later.
+
+    svg
+      .append("g")
+        .attr("transform", "translate(" + width / 2 +", "height / 2 +")" )
+        .classed("chart", true);
+
+I also append the **text** element to the top of SVG I added a **class** to it,
+**center** it, and **style** little bit.
+
+    svg
+      .append("text")
+          .classed("title", true)
+          .attr("x", width / 2)
+          .attr("y", 30)
+          .style("font-ize", "2em")
+          .style("text-anchor", "middle");
+
+In order to reduce code duplication, I like to write a function for responsible
+to **drawing** a graph. This might seem overkill now but it will be a life safer
+when we want to get **range input** working. So I write a function called
+**drawGraph** which take a **year** as an argument. Base on the year I **filter**
+my data set.
+
+I also setup my **pie chart helpers**, I create a variable call **arcs** and
+assign a value base on **d3.pie** I use the **value** method to specify I want
+to **grab births**, and I use **sort** method to sort my arcs. Here I want to
+sort things chronologically, so I use index of the month and order month array
+to determine my sort order.
+
+After that I create **path** function using **d3.arc** since I know I'll add
+inner cart later, for now I set the **innerRadius** to be positive.
+
+Now I select my **chart** group create an empty selection and join the data I get
+back when I pass my year data into the **.arc** function. I store this in
+variable called **outer** since it the **outer cart**.
+
+One thing that's nice about this chart is that the number of **arc** is always
+the same, so I never have to hub into exit selection. Instead for any new
+**arcs** I add a class of **arcs** and set the **fill** for the **merge**
+selection I just need to update **d** attributes. Note this **enter** selection
+only matters the first time I draw a graph. After that the **update** selection
+is the only one that will have anything in it.
+
+Finally I update the **text** and the **title**, I do it here rather then one
+originally appended the text elements so that I can avoid some duplication when
+I need to update the text.
+
+    function drawGraph(year) {
+      var yearData = birthData.filter(d => d.year === year);
+      var arcs = d3.pie()
+                   .value(d => d.births)
+                   .sort((a, b) => orderedMonths.indexOf(a.month) - orderedMonths.indexOf(b.month));
+
+      var path = d3.arc()
+                   .innerRadius(width / 4)
+                   .outerRadius(width / 2 - 40);
+
+      var outer = d3.select(".chart")
+                    .selectAll(".arc")
+                    .data(arcs(yearData));
+
+      outer
+        .enter()
+        .append("path")
+          .classed("arc", true)
+          .attr("fill", d => colorScale(d.data.month))
+        .merge(outer)
+          .attr("d", path);
+
+      d3.select(".title")
+          .text("Births by months and quarter for " + year);
+    }
+
+![Pie-charts-exercise-2.jpg](./Pie-Charts-Exercise-and-Solution/images/Pie-charts-exercise-2.jpg)
+
+Now all I need to do is call this function and pass in **minYear**.
+
+### Second Stage
+
+Here's where having a **drawGraph** function really pays off, first I put the
+**input** into HTML and set it step to **1**.
+
+    <input type="range" step="1"/>
+
+I also center it in CSS.
+
+    svg, input {
+      margin: 0, auto;
+      display: block;
+    }
+
+After that I use **d3.max** to grab the largest year
+
+    var maxYear = d3.max(birthData, d => d.year);
+
+And then all I need to do select this **input** set it to **min**, **max** and
+**values** and inside the **eventhandler** for **input event** call the
+**drawGraph** function and pass the **event target value**.
+
+    d3.select('input')
+        .property('min', minYear)
+        .property('max', maxYear)
+        .property('value', minYear)
+        .on('input', () => drawGraph(+d3.event.target.value));
+
+![Pie-charts-exercise-1.gif](./Pie-Charts-Exercise-and-Solution/images/Pie-charts-exercise-1.gif)
+
+Looking good, stage 2 complete.
+
+### Third Stage
+
+For the final stage I just get to do few more things. First I create an array
+four colors for the four quarters.
+
+    var quarterColors = ["#1f77b4", "#2ca02c", "#d62728", "#ff7f0e"];
+
+I also need **append** new **chart group**, I give this one **class** **inner-class**
+
+    svg
+      .append("g")
+        .attr("transform", "translate(" + width / 2 + ", " + height / 2 + ")")
+        .classed("inner-chart", true);
+
+I also need to tabulate **birthCount** by quarter in order to do that I write
+a helper method called **getDataByQuarter** which does exactly that. Give some
+yearly data, I first create an array which keep tracks of births for each
+quarter.
+
+    var quarterTallies = [0, 1, 2, 3].map(n => ({ quarter: n, births: 0 }));
+
+Then I loop through my data and store the current element in a variable called
+**row**, I can determine the quarter for **row** base on it's month position in
+**order month array**, for example if it's index is **0, 1 or 2** it's must be
+at first quarter. This expression will give me the quarter for any of my object,
+once I have the right quarter I can update the appropriate object in my
+**quarterTallies** array, finally once done looping I can return my **tallies by
+quarter**.
+
+    function getDataByQuarter(data) {
+      var quarterTallies = [0, 1, 2, 3].map(n => ({ quarter: n, births: 0 }));
+      for (var i = 0; i < data.length; i++) {
+        var row = data[i];
+        var quarter = Math.floor(orderedMonths.indexOf(row.month) / 3);
+        quarterTallies[quarter].births += row.births;
+      }
+      return quarterTallies;
+    }
+
+Next I need different **pie** and **arc** helpers for second **chart**. To
+generate the **arc** object I use **d3.pie** and pass the same callback to the
+value method but now I can just **sort** by the **value key**.
+
+    var innerArcs = d3.pie()
+                      .value(d => d.births)
+                      .sort((a, b) => a.quarter - b.quarter);
+
+My **innerPath** will also be similar though the **radians** will be different.
+
+    var innerPath = d3.arc()
+                      .innerRadius(0)
+                      .outerRadius(width / 4);
+
+Once I have this, I can joint my data to **arc** inside the **inner-chart** by
+taking my **yearData** call **getDataByQuarter** on it, and call **innerChart**
+on that.
+
+    var inner = d3.select(".inner-chart")
+                  .selectAll(".arc")
+                  .data(innerArcs(getDataByQuarter(yearData)));
+
+Then I can go to the same pattern as before. I didn't setup the **colorScale**
+so I just keep things simple and use **index** to find the right color in my
+**quarterColor** array. Also I need to use my **innerPath** function to set
+**d** attributes instead of my **path** function.
+
+    inner
+      .enter()
+      .append("path")
+        .classed("arc", true)
+        .attr("fill", (d, i) => quarterColors[i])
+      .merge(inner)
+        .attr("d", innerPath);
+
+
+![Pie-charts-exercise-2.gif](./Pie-Charts-Exercise-and-Solution/images/Pie-charts-exercise-2.gif)
