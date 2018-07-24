@@ -17,3 +17,17 @@ svg {
   border-radius: 8px;
   padding: 15px;
 }
+
+.tooltip p {
+  margin: 0;
+}
+
+.tooltip:before {
+  content: ' ';
+  position: absolute;
+  border: 12px solid transparent;
+  border-bottom-color: blue;
+  top: -30px;
+  left: 50%;
+  margin-left: -6px;
+}
