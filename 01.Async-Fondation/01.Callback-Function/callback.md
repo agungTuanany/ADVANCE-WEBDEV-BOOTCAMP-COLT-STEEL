@@ -1,9 +1,9 @@
-objectives.
+## OBJECTIVES
 
-1. Define callback functions
+1. Define callback functions.
 
-    callback function is a function that passed into another function as a parameter then invoked by that other function
-
+    Callback function is a function that **passed into another function as
+    a parameter** then invoked by that other function.
 
 2. Define higher order functions
 
@@ -11,10 +11,9 @@ objectives.
 
 3. use callback functions to make code more general
 
+    What are callbacks used for ?
 
-What are callbacks used for ?
-
-    1. advanced array methods
-    2. browser events
-    3. AJAX request
-    4. React Development
+    * advanced array methods
+    * browser events
+    * AJAX request
+    * React Development
