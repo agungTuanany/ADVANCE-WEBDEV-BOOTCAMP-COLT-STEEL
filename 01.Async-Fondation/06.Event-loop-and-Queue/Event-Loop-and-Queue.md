@@ -1,5 +1,5 @@
 
-##  OBJECTIVE
+## OBJECTIVE
 
 Lets takes another step back and learn about the **fundamental** of how
 asynchronous code works in JavaScript, by learning about the **Event Loop** and
@@ -23,7 +23,7 @@ In addition to the Queue, we also need to understand:
 
 ##### Define the event loop and the queue | The Queue | Queue Example
 
-So Here we've got an example of a**setTimeout** a pretty simple example were
+So Here we've got an example of a **setTimeout** a pretty simple example were
 just calling this **callback()** function will console.log **"Hello Wolrd!"**,
 but the **key** here is that  we going to invoked **0** second from now.
 
@@ -42,15 +42,15 @@ immediately will place on the **Queue**.
 
 We finishing with **setTimeout** that will be pop-out from the **Stack** and
 then after that our **main** function will finished up. So all done there, now
-our stack is **empty(11)**.
+our stack is **empty (11)**.
 
-(12) So the next step here, how's the function get from **Queue** to the
+(**12**) So the next step here, how's the function get from **Queue** to the
 **Stack**, well as we talk before that a job the **Event Loop**. **Event Loop**
 will **check** the **Queue** and see if there's anything there, **if** there is
 it will take out the **Queue** and place on the **Stack**.
 
 So our **callback** function that just did console.log **"Hello World"** will be
-taken from the **Queue** and places in the **Stack** by the **Event Loop(16)**.
+taken from the **Queue** and places in the **Stack** by the **Event Loop (16)**.
 
 So console.log will place on the **Stack** as another function get invoke, we
 will print the "Hello World" to the console(**18**), and then console.log will
