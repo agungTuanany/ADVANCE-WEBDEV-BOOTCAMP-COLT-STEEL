@@ -148,9 +148,9 @@ turn **caller** callback function.
 
 ![Promise-Chaining-1.gif](./images/Promise-Chaining-1.gif)
 
-### 5. Describe the disadvantages of using nested callbacks
+### 5. Describe the Disadvantages of Using Nested Callbacks
 
-####  Describe the disadvantages of using nested callbacks | Example
+####  Describe the Disadvantages of Using Nested Callbacks | Example
 
 ![Promise-Chaining-2.gif](./images/Promise-Chaining-2.gif)
 
@@ -229,173 +229,97 @@ quick like **500** millisecond.
 So really cool features we can combine asynchronous task into a **chain
 promisess**.
 
+### 6. Return a Promise From ".then" Callback Function | Promise Chaining : Returning Data
+
+Promise is not the only thing is can return from inside **.then** callback
+thought. A promise callback can also return **value**, so the value return in
+previous **.then** callback will be pass in to the next **.then** callback as
+a **parameter**.
+
+![Promise-Chaining-7.gif](./images/Promise-Chaining-7.gif)
+
+(**1**) we were **resolving** with **5**, and this first callback.
+
+(**2**) will receive **6** as data,
+
+(**3** )and then will return **5** times **2** which is **10**.
+
+(**4**) which will be pass in to next **.then** callback so now **data**
+equal to **10**.
+
+(**5**) and **10** plus **20** it give us **30**.
+
+(**6**) now the next callback gets **30**.
+
+(**7**) and finally we console.log that **30**
 
 
+#### Return a Promise From ".then" Callback Function | Nested Callbacks: To Be Refactored
+
+How we use **promises** to help solve this problem?
+
+![Promise-Chaining-8.gif](./images/Promise-Chaining-8.gif)
+
+Lets take step by step,
+
+(**1**) first we create a function definition for just the incrementing portion.
+So this function all it does is take in our **counter++** increment it, and then
+console.log what ever the value counter is. And that functionality is the same
+through out each callback.
+
+(**2**) So now we create a function call **runLater**, and this is very generic
+function that will take **callback** and **timeInMs** as a argument, and run
+that callback using **setTimeout** but it will wrap the **setTimeout** in
+a **Promise**.
+
+(**3 - 4**) So this **runLater** function at the end will return new **promise**
+that we can attach **.then** or **.catch** callback to. Inside the **Promise**
+**setTimeout** is invoke, the callback run after the delay,
+
+(**5 - 7**) after **timeInMs** delay, and the value return from this **callback()**
+that invoke inside of the function is then pass through to **resolve**.
+
+So this will work with pretty much any callback function you want, and the goal
+is return a normal **setTimeout** call into a promised vie **setTimeout**.
+
+![Promise-Chaining-9.gif](./images/Promise-Chaining-9.gif)
+
+(**8**) now we going to use **runLater** function and promise chaining we learn
+earlier to refactor the code that we had before.
+
+(**9**) so the first **runLater** here, will invoke **incCounter** function in
+**1** second.
+
+(**10**) Remember **runLater** return a promise, so we can attach **.then** to
+that promise. This callback will be invoke after the **incCounter** has a result
+
+(**11 - 13**) and then will return a new promise form now on later, which also
+invoke **incCounter** in **2000** millisecond.
+
+(**14 - 16 **) then the next **.then** callback invoke will return a new promise
+which run the **incCounter** in **3000** millisecond.
+
+(**17-18**) and finally this last **.then** is unnecessary, but if you wan to put
+there final code there like console.log or something else, you could. So this
+essentially inside this **.then** we know that the code is done.
+
+Let see on the console,
+
+![Promise-Chaining-10.gif](./images/Promise-Chaining-10.gif)
+
+We refactor messy code from using **nested** callback into using **Promises**,
+and this code much easier to read once you understand what **Promises** and
+**Promises Chaining** are doing here.
 
 
+One last thing I want point out here,
 
+![Promise-Chaining-1.jpg](./images/Promise-Chaining-1.jpg)
 
+Later on when you use promises especially on AJAX, you not gonna be creating
+a new promise yourself rather you gonna be given a promise as result invoking
+some function, specifically you gonna be using the new **Fetch** functionality
+and **Fetch** will return a new promises to you.
 
-
-
-
-
-
-
-### 6. Return a promise from ".then" callback function
-
-### 7. Use a promise to make asynchronous code seem sequential
-
-==========================================
-
-
-
--- promise  (conceptual) is 
-
-an object that represet a task that will be completed in the future
-
-analogy : taking an number at a goverment office before you can get helped. The piece of paper you get is like your promise. The help you get at the counter is like the invocation of your callback.
-
-
--- add a.then is
-
--- add a.catch is 
-    to catch an error
-
-1. represet : mewakili, menggambarkan, menyatakan, menerangkan
-
-
-ei. 1 promise
-
-	var p1 = new Promise(function(resolve, reject) {
-	    resolve([1,2,3,4,5]);
-	});
-
-	p1.then(function(arr) {
-	    console.log('promise p1 resolve with data: ' arr);
-	});
-
- in this exampel p1.then is defining the callback 
- will be invoked when resolve is invoke inside the promise
-
-ei. 2 promise : handling erros
-
-
-	var p1 = new Promise (function(resolvem reject) {
-	    reject('ERROR');
-	});
-
-	p1.then(function(data) {
-	    console.log('promise p1 resolved with data: ' , data);
-	}).catch(function(data) {
-	    console.log('promise p1 was rejected with data: ', data);
-	});
-
-
-ei. 3 Promise With Randomly Occuring Errors
-
-	var p1 = new Promise(function(resolve, reject) {
-	    var num = Math.random();
-	    if (num < 0.5) {
-		resolve(num);
-	    } else {
-		reject(num);
-	    }
-	});
-
-	p1.then(function(result) {
-	    console.log("Success: ", result);
-	}).catch(function(error) {
-	console.log("Error: ", error);
-	});
-
-
-ei.4 Wrap setTimeout with Promise
-
-	var promise = new promise(function(resolve, reject) {
-	    setTimeout(function() {
-		var randomInt = Math.floor(Math.random() * 100);
-	    }, 4000);
-	});
-
-	promise.then(function(data) {
-	    console.log("Random int passed to resolvbe: ", data);
-	})
-
-
-
-eg. 5 Nested Ascync Callbacks that doesn't use promise
-
-// this code is a bad sample, when code get bigger its hard to maintain the code.
-	 
-	var counter = 0;
-	 setTimeout(function() {
-	     counter++;
-	     console.log("counter: ", counter);
-	     setTimeout(function() {
-		 counter++;
-		 console.log("counter: ", counter);
-		 setTimeout(function() {
-		    counter++;  
-		console.log("counter: ", counter); 
-		 },3000);
-	     },2000);
-	 },1000);
-
-
-
-eg.5 Nested Ascync Callbacks use promise
-
-	 var promise = new Promise(function(resolve, reject) {
-	     setTimeout(function() {
-		 randomInt = Math.floor(Math.random() * 10);
-		 resolve(randomInt);
-	     }, 500);
-	 });
-
-	 promise.then(function(data) {
-	     console.log("Second random int passed to resolve: ", data);
-	     return new promise(function(resolve, reject) {
-		 setTimeout(function() {
-		     resolve(Math.floor(Math.random() * 10));
-		 },3000);
-	     });
-	 }).then(function(data) {
-	     console.log("Second random int passed to resolve: ", data);
-	 });
-
-
-eg.6 Refactor Nested Callbacks
-
-
-//1.  creat a function Declaration (definition)
-
-	 var counter = 0;
-	 function inCounter() {
-	     conter++;
-	     console.log("Counter: ", counter);
-	 }
-
-//2. Create a runlater Function
-
-	function runLater(callback, timeInMs) {
-	    var p = new Promise(function(resolve, reject) {
-		setTimeout(function() {
-		    var res = callback();
-		    resolve(res);
-		} timeInMs);
-	    });
-	    return p;
-	}
-
-//3. Chain promises
-
-	runLater(incCounter, 1000).then(function() {
-		return runLater(incCounter, 2000);
-	}).then(function() {
-		return runLater(incCounter, 3000);
-	}).then(function() {
-		// final '.then' not necessary
-	})
-	
-	
+So event thought you don't create your own promises, it's useful to understand
+what there doing both **resolve** and **reject**, so I hope that was helpful.
